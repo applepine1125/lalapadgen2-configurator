@@ -25,7 +25,8 @@ macOS では HID 接続中の BLE デバイスにブラウザ(Web Bluetooth)か�
 `main` への push で `.github/workflows/app.yml` がビルドし、**下書きの**リリースを作ります。下書きは GitHub API の一覧に出ないためアプリからは見えません。手元で署名して公開すると検知されるようになります。
 
 ```sh
-bash release.sh lala2conf-b12
+bash release.sh          # 最新の下書きを署名して公開する
+bash release.sh --wait   # CI のビルドを待ってから公開する
 ```
 
 秘密鍵は手元(`~/.config/lala2conf/signing.key`)にしか置きません。CI に鍵を置くと、リポジトリを取られた相手がそのワークフローで署名できてしまい、検証の意味が無くなるためです。鍵の作り方はリポジトリ直下の `README.md` を参照してください。
