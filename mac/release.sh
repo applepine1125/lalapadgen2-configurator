@@ -68,8 +68,14 @@ echo "元コミット: $(gh release view "$TAG" -R "$REPO" --json body --jq '.bo
 echo
 
 if [ "$ASSUME_YES" -eq 0 ]; then
+  # 端末以外から実行されると read が EOF になり、理由の分からないまま終わってしまう
+  if [ ! -t 0 ]; then
+    echo "確認を取れません(標準入力が端末ではありません)" >&2
+    echo "上の内容を確かめたうえで --yes を付けて実行し直すか、端末から実行してください" >&2
+    exit 1
+  fi
   printf "この内容に署名して公開しますか? [y/N] "
-  read -r answer
+  read -r answer || answer=""
   case "$answer" in
     y|Y|yes) ;;
     *) echo "やめました"; exit 1 ;;
