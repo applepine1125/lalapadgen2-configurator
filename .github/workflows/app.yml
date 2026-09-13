@@ -1,0 +1,37 @@
+name: Lala2Conf app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'mac/**'
+      - '.github/workflows/app.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run page tests
+        run: node --test web/
+
+      - name: Build app
+        run: bash mac/build.sh --build ${{ github.run_number }}
+
+      - name: Package zip
+        run: ditto -c -k --keepParent mac/build/Lala2Conf.app "Lala2Conf-b${{ github.run_number }}.zip"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="$(git log -1 --format='%h %s')"
+          gh release create "lala2conf-b${{ github.run_number }}" "Lala2Conf-b${{ github.run_number }}.zip" \
+            --title "Lala2Conf build ${{ github.run_number }}" \
+            --notes "$notes"

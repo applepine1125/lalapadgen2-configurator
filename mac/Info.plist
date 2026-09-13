@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
   <key>CFBundleIdentifier</key>
-  <string>dev.applepine1125.tp-tuner</string>
+  <string>dev.applepine1125.lala2conf</string>
   <key>CFBundleName</key>
-  <string>TpTuner</string>
+  <string>Lala2Conf</string>
   <key>CFBundleExecutable</key>
-  <string>TpTuner</string>
+  <string>Lala2Conf</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>LSMinimumSystemVersion</key>

@@ -29,7 +29,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-APP_DIR="build/TpTuner.app"
+APP_DIR="build/Lala2Conf.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
@@ -41,7 +41,7 @@ mkdir -p "$WEB_DIR"
 
 swiftc -O -swift-version 5 -sdk "$(xcrun --show-sdk-path)" \
   -framework AppKit -framework WebKit -framework CoreBluetooth -framework IOKit \
-  Sources/*.swift -o "$MACOS_DIR/TpTuner"
+  Sources/*.swift -o "$MACOS_DIR/Lala2Conf"
 
 cp Info.plist "$CONTENTS_DIR/Info.plist"
 VERSION="$(cat VERSION)"
@@ -63,12 +63,12 @@ iconutil -c icns "$ICONSET_DIR" -o "Icon/AppIcon.icns"
 rm -rf "$ICON_WORK_DIR"
 cp "Icon/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
-cp ../tp-tuner/index.html "$WEB_DIR/index.html"
-for f in ../tp-tuner/*.js; do
+cp ../web/index.html "$WEB_DIR/index.html"
+for f in ../web/*.js; do
   case "$f" in *.test.js) ;; *) cp "$f" "$WEB_DIR/";; esac
 done
-if [ -d ../tp-tuner/dev ]; then
-  cp -R ../tp-tuner/dev "$WEB_DIR/dev"
+if [ -d ../web/dev ]; then
+  cp -R ../web/dev "$WEB_DIR/dev"
 fi
 
 codesign --force --sign - "$APP_DIR"
@@ -76,9 +76,9 @@ codesign --force --sign - "$APP_DIR"
 echo "ビルド完了: $APP_DIR (version $VERSION, build $BUILD_NUMBER)"
 
 if [ "$DO_INSTALL" = "1" ]; then
-  rm -rf /Applications/TpTuner.app
-  ditto "$APP_DIR" /Applications/TpTuner.app
-  echo "インストール完了: /Applications/TpTuner.app"
+  rm -rf /Applications/Lala2Conf.app
+  ditto "$APP_DIR" /Applications/Lala2Conf.app
+  echo "インストール完了: /Applications/Lala2Conf.app"
 fi
 
 if [ "$DO_RUN" = "1" ]; then

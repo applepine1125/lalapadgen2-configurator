@@ -2,8 +2,8 @@ import AppKit
 
 final class Updater {
   private let repoOwner = "applepine1125"
-  private let repoName = "zmk-config-LalaPadGen2"
-  private let tagPattern = try! NSRegularExpression(pattern: "^tp-tuner-b(\\d+)$")
+  private let repoName = "lalapadgen2-configurator"
+  private let tagPattern = try! NSRegularExpression(pattern: "^lala2conf-b(\\d+)$")
 
   private var currentBuild: Int {
     Int(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0") ?? 0
@@ -24,7 +24,7 @@ final class Updater {
     let listURL = URL(string: "https://api.github.com/repos/\(repoOwner)/\(repoName)/releases?per_page=20")!
     var request = URLRequest(url: listURL)
     request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
-    request.setValue("TpTuner-Updater", forHTTPHeaderField: "User-Agent")
+    request.setValue("Lala2Conf-Updater", forHTTPHeaderField: "User-Agent")
 
     URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
       guard let self else { return }

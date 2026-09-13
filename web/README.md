@@ -8,7 +8,7 @@ IQS9151 ドライバのジェスチャ判定値と IC 感度レジスタをそ�
 
 1. **接続**: USB なら調整したい側の半分にケーブルを挿して「接続」を押す(右手(central)側は
    ポートが 2 つ見えるので、応答するほうを選ぶ。応答しない方を選ぶと「もう一方のポートを選んで
-   ください」と出るので選び直す)。BT は `tools/tp-tuner-mac` の Mac ネイティブアプリを使う
+   ください」と出るので選び直す)。BT は `mac` の Mac ネイティブアプリを使う
    (下記参照)。一度接続を許可したポート/機器は次回から自動接続される(上部の「自動接続」で切れる)
 2. **触って見る**: パッドに指で触れると、画面左半分の右手・左手それぞれのパッドに指の位置と判定が
    リアルタイムに出る(USB は接続した側だけ)。画面右半分の「今の操作」に側ごとの現在の状態が
@@ -23,8 +23,8 @@ Web Serial API が必要なので Chrome または Edge で開くこと(Safari /
 ## BT で使う(Mac アプリ)
 
 macOS では HID 接続中の BLE デバイスにブラウザ(Web Bluetooth)から GATT アクセスできないため、
-BT 接続には `tools/tp-tuner-mac` の Mac ネイティブアプリを使う。ビルド方法は
-`tools/tp-tuner-mac/README.md` を参照。アプリは `index.html` と `tuner.js` を自前の WKWebView で
+BT 接続には `mac` の Mac ネイティブアプリを使う。ビルド方法は
+`mac/README.md` を参照。アプリは `index.html` と `tuner.js` を自前の WKWebView で
 そのまま表示し、USB シリアルの代わりにネイティブ側の橋渡し(BLE / USB シリアル列挙)で接続する。
 
 - 接続すると右手(central)・左手(peripheral)の両方に `info` / `list` を送り、左右を同時に扱う。
@@ -51,7 +51,7 @@ BT 接続には `tools/tp-tuner-mac` の Mac ネイティブアプリを使う�
   `無し` を選ぶとこの予約は解除される。`default` は組み込みのため保存・削除はできず、同名でのプリセット
   作成もできない。「新規作成」は画面内モーダルで名前を入力し、今の画面の状態を 1 つのプリセットとして
   保存する。「保存」は選択中のプリセットを今の画面の状態で上書きし、「削除」は選択中のプリセットを消す。
-  プリセットは Mac アプリでは `~/Library/Application Support/TpTuner/presets.json`、ブラウザでは
+  プリセットは Mac アプリでは `~/Library/Application Support/Lala2Conf/presets.json`、ブラウザでは
   `localStorage` に保存される
 - **パッド(画面左半分)**: 右手・左手を横に並べ、それぞれ縦横比 2457:3072 の暗い面に `T F` から
   指の位置を光る点で描いて 300ms で薄れる軌跡を残す。色は待機(灰)/ 1 本指(青)/ 2 本指スクロール・
@@ -129,7 +129,7 @@ BT 接続には `tools/tp-tuner-mac` の Mac ネイティブアプリを使う�
 
 ## 開発
 
-    node --test tools/tp-tuner/
+    node --test web/
 
 ロジックは `tuner.js`(パラメータ調整、純粋関数)と `keymap_ui.js`(キー設定タブの表示・判定、
 純粋関数)、ZMK Studio RPC クライアントは `studio.js`、キーコード表は `keycodes.js`。`presets.js` は

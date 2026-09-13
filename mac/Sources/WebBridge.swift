@@ -133,12 +133,22 @@ final class WebBridge: NSObject {
 
   private func presetsFileURL() -> URL {
     let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+    return supportDir.appendingPathComponent("Lala2Conf/presets.json")
+  }
+
+  /* TpTuner だった頃の保存先。まだ移っていない環境では読み込みだけこちらを見る */
+  private func legacyPresetsFileURL() -> URL {
+    let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
     return supportDir.appendingPathComponent("TpTuner/presets.json")
   }
 
   private func loadPresets() {
-    let url = presetsFileURL()
-    guard FileManager.default.fileExists(atPath: url.path) else {
+    let fm = FileManager.default
+    var url = presetsFileURL()
+    if !fm.fileExists(atPath: url.path), fm.fileExists(atPath: legacyPresetsFileURL().path) {
+      url = legacyPresetsFileURL()
+    }
+    guard fm.fileExists(atPath: url.path) else {
       send(type: "presetsLoaded", payload: ["ok": true])
       return
     }

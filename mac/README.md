@@ -1,6 +1,6 @@
 # tp-tuner Mac ネイティブアプリ
 
-LalaPad Gen2 のトラックパッド設定を、macOS のネイティブアプリとして BLE または USB で調整するためのアプリです。`tools/tp-tuner/index.html` と `tuner.js` を WKWebView で表示し、Bluetooth(CoreBluetooth)と USB シリアル(POSIX)への橋渡しをネイティブ側が行います。
+LalaPad Gen2 のトラックパッド設定を、macOS のネイティブアプリとして BLE または USB で調整するためのアプリです。`web/index.html` と `tuner.js` を WKWebView で表示し、Bluetooth(CoreBluetooth)と USB シリアル(POSIX)への橋渡しをネイティブ側が行います。
 
 macOS では HID 接続中の BLE デバイスにブラウザ(Web Bluetooth)から GATT アクセスできないため、BLE 経由での調整にはこのアプリが必要です。
 
@@ -12,15 +12,15 @@ macOS では HID 接続中の BLE デバイスにブラウザ(Web Bluetooth)か�
    ./build.sh --install
    ```
 
-   `build/TpTuner.app` を直接起動して試すだけなら `./build.sh --run` でも構いません。
+   `build/Lala2Conf.app` を直接起動して試すだけなら `./build.sh --run` でも構いません。
 
-2. 初回起動時、Gatekeeper が「開発元を確認できません」と表示して起動をブロックすることがあります。Finder で `/Applications/TpTuner.app` を右クリックして「開く」を選び、表示されるダイアログでもう一度「開く」を選んでください(以降はダブルクリックで起動できます)。
+2. 初回起動時、Gatekeeper が「開発元を確認できません」と表示して起動をブロックすることがあります。Finder で `/Applications/Lala2Conf.app` を右クリックして「開く」を選び、表示されるダイアログでもう一度「開く」を選んでください(以降はダブルクリックで起動できます)。
 3. Bluetooth の使用許可を求めるダイアログが表示されるので、許可してください。許可しないと BLE 経由の接続ができません(USB のみ使用可能)。
 4. アプリの画面で対象デバイスを選び「接続」を押します。候補が 1 つだけの場合は自動接続されることがあります。
 
 ## 更新の仕組み
 
-起動から数秒後と、メニューの「TpTuner > 更新を確認…」で GitHub Releases(タグ `tp-tuner-b<ビルド番号>`)を確認し、手元より新しいビルドがあれば通知します。「更新する」を選ぶと zip をダウンロードして展開し、隔離属性を外したうえで自分自身のアプリバンドルを置き換えて再起動します。`main` への push で `.github/workflows/tp-tuner-app.yml` がビルドしてリリースを作成するため、通常は何もしなくても新しいビルドが検知されます。
+起動から数秒後と、メニューの「Lala2Conf > 更新を確認…」で GitHub Releases(タグ `lala2conf-b<ビルド番号>`)を確認し、手元より新しいビルドがあれば通知します。「更新する」を選ぶと zip をダウンロードして展開し、隔離属性を外したうえで自分自身のアプリバンドルを置き換えて再起動します。`main` への push で `.github/workflows/tp-tuner-app.yml` がビルドしてリリースを作成するため、通常は何もしなくても新しいビルドが検知されます。
 
 手元でビルドしたもの(`--build` を省略、ビルド番号 0)は起動時の自動確認をしません。メニューからの手動確認は常に行えます。
 
