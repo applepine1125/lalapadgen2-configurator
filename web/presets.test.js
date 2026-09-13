@@ -421,6 +421,19 @@ test('diffCount はパラメータ差分・キー差分・レイヤー数差分(
   assert.equal(P.diffCount(null, null), 0);
 });
 
+test('diffItemCount は左右で同じ名前の差分を 1 項目として数える', () => {
+  assert.equal(P.diffItemCount([{ side: 'R', name: 'a' }, { side: 'L', name: 'a' }], { layerCount: null, keys: [] }), 1);
+  assert.equal(P.diffItemCount([{ side: 'R', name: 'a' }, { side: 'L', name: 'b' }], { layerCount: { preset: 2, screen: 1 }, keys: [{}] }), 4);
+  assert.equal(P.diffItemCount(null, null), 0);
+});
+
+test('左右に同じ名前の差分があるとき、件数と項目数が食い違う(表示の内訳に使う)', () => {
+  const paramDiff = [{ side: 'R', name: 'a' }, { side: 'L', name: 'a' }];
+  const keymapDiff = { layerCount: null, keys: [] };
+  assert.equal(P.diffCount(paramDiff, keymapDiff), 2);
+  assert.equal(P.diffItemCount(paramDiff, keymapDiff), 1);
+});
+
 test('resolveEntry は behavior 名から ID を引き、{ layer } をレイヤー ID に直す', () => {
   const layers = [{ id: 10 }, { id: 20 }];
   assert.deepEqual(P.resolveEntry({ behavior: 'Key Press', param1: 5, param2: 0 }, BEHAVIORS, layers), { behaviorId: 1, param1: 5, param2: 0 });

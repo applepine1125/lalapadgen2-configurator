@@ -269,6 +269,14 @@
     return tp + km + lc;
   }
 
+  /* 左右で同じ名前の差分は 1 項目として数える(表示は「差分 2 件(左右 1 項目)」) */
+  function diffItemCount(trackpadDiffList, keymapDiffResult) {
+    const tp = trackpadDiffList ? new Set(trackpadDiffList.map((d) => d.name)).size : 0;
+    const km = keymapDiffResult ? keymapDiffResult.keys.length : 0;
+    const lc = keymapDiffResult && keymapDiffResult.layerCount ? 1 : 0;
+    return tp + km + lc;
+  }
+
   function resolveParam(value, layers) {
     if (value && typeof value === 'object' && typeof value.layer === 'number') {
       const layer = (layers || [])[value.layer];
@@ -324,7 +332,8 @@
     STORE_VERSION, DEFAULT_PRESET_ID, DEFAULT_PRESET_NAME, emptyStore, listPresets, parseStore, serializeStore,
     findPreset, validateName, createPreset, updatePreset, deletePreset, selectPreset,
     trackpadScreenValues, trackpadDiff, trackpadPendingFromPreset,
-    keymapSnapshot, entriesEqual, keymapDiff, diffCount, resolveEntry, layerCountAdjust, planKeymapBindings,
+    keymapSnapshot, entriesEqual, keymapDiff, diffCount, diffItemCount, resolveEntry, layerCountAdjust,
+    planKeymapBindings,
   };
   root.TpPresets = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

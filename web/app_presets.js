@@ -39,12 +39,10 @@
   function diffSummaryText() {
     const paramDiff = Params.presetDiff();
     const keymapDiff = isDefaultSelected() ? { layerCount: null, keys: [] } : Keymap.presetDiff();
-    const keymapCount = keymapDiff.keys.length + (keymapDiff.layerCount ? 1 : 0);
     const count = Presets.diffCount(paramDiff, keymapDiff);
-    /* 左右で同じ名前の差分は 1 項目として数える(表示は「差分 2 件(左右 1 項目)」) */
-    const items = new Set(paramDiff.map((d) => d.name)).size + keymapCount;
+    const items = Presets.diffItemCount(paramDiff, keymapDiff);
     if (count === 0) return 'プリセットと一致';
-    const detail = count !== items ? `(左右 ${paramSummary.items} 項目)` : '';
+    const detail = count !== items ? `(左右 ${items} 項目)` : '';
     return `差分 ${count} 件${detail}`;
   }
 
