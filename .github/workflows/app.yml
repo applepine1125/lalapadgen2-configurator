@@ -32,6 +32,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           notes="$(git log -1 --format='%h %s')"
+          # 下書きで作る。手元の鍵で署名して公開するまでアプリからは見えない(mac/release.sh)
           gh release create "lala2conf-b${{ github.run_number }}" "Lala2Conf-b${{ github.run_number }}.zip" \
             --title "Lala2Conf build ${{ github.run_number }}" \
-            --notes "$notes"
+            --notes "$notes" \
+            --draft
