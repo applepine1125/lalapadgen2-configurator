@@ -15,7 +15,7 @@ LalaPad Gen2 のトラックパッドとキー設定を、つなぎながら調�
 
 | 場所 | 中身 |
 | --- | --- |
-| `web/` | 画面とロジック。依存なしの HTML + JavaScript。`node --test web/` でテストできる |
+| `web/` | 画面とロジック。依存なしの HTML + JavaScript。`node --test web/*.test.js` でテストできる |
 | `mac/` | macOS アプリ。Swift + WKWebView で `web/` を表示し、BLE(CoreBluetooth)と USB シリアルへの橋渡しをする |
 
 ## 使う
@@ -37,7 +37,7 @@ bash mac/build.sh --install
 ## 開発
 
 ```
-node --test web/          # ページのテスト
+node --test web/*.test.js   # ページのテスト
 bash mac/build.sh --run   # ビルドして起動
 ```
 

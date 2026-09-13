@@ -129,7 +129,7 @@ BT 接続には `mac` の Mac ネイティブアプリを使う。ビルド方�
 
 ## 開発
 
-    node --test web/
+    node --test web/*.test.js
 
 ロジックは `tuner.js`(パラメータ調整、純粋関数)と `keymap_ui.js`(キー設定タブの表示・判定、
 純粋関数)、ZMK Studio RPC クライアントは `studio.js`、キーコード表は `keycodes.js`。`presets.js` は
