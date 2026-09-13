@@ -4,7 +4,7 @@ import CryptoKit
 /* リリースの zip は、手元にしか無い ed25519 の鍵で署名してから公開する(mac/release.sh)。
  * ここに埋め込んだ公開鍵で検証し、合わないものは入れない。
  * 鍵を CI に置くとリポジトリを取られた相手が署名できてしまうので、置かないこと。 */
-private let updatePublicKeyBase64 = "PASTE_PUBLIC_KEY_HERE"
+private let updatePublicKeyBase64 = "csCPvGdPtFHTl47CcyTa//gMAfV+FhpA0bsWPfcMS4Q="
 
 final class Updater {
   private let repoOwner = "applepine1125"
