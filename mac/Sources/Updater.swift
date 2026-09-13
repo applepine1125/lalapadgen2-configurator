@@ -109,7 +109,31 @@ final class Updater {
     downloadAndInstall(from: url, signatureURL: signatureURL)
   }
 
+  /* 署名を先に取り、その完了ハンドラの中で zip を落とす。
+   * 完了ハンドラの中から同じセッションへ投げて待つと、内側の応答が返らずデッドロックする */
   private func downloadAndInstall(from url: URL, signatureURL: URL) {
+    var request = URLRequest(url: signatureURL)
+    request.setValue("Lala2Conf-Updater", forHTTPHeaderField: "User-Agent")
+    URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+      guard let self else { return }
+      do {
+        guard let data else { throw error ?? UpdaterError.signatureDownloadFailed }
+        self.downloadZip(from: url, signature: try self.parseSignature(data))
+      } catch {
+        DispatchQueue.main.async { self.showInstallError(error) }
+      }
+    }.resume()
+  }
+
+  private func parseSignature(_ data: Data) throws -> Data {
+    let text = String(decoding: data, as: UTF8.self).trimmingCharacters(in: .whitespacesAndNewlines)
+    guard let signature = Data(base64Encoded: text), signature.count == 64 else {
+      throw UpdaterError.signatureUnreadable
+    }
+    return signature
+  }
+
+  private func downloadZip(from url: URL, signature: Data) {
     URLSession.shared.downloadTask(with: url) { [weak self] location, _, error in
       guard let self else { return }
       do {
@@ -121,36 +145,12 @@ final class Updater {
         let zipPath = workDir.appendingPathComponent("update.zip")
         try FileManager.default.moveItem(at: location, to: zipPath)
 
-        let signature = try self.fetchSignature(from: signatureURL)
         try self.verify(zipAt: zipPath, signature: signature)
         try self.install(zipAt: zipPath, workDir: workDir)
       } catch {
         DispatchQueue.main.async { self.showInstallError(error) }
       }
     }.resume()
-  }
-
-  private func fetchSignature(from url: URL) throws -> Data {
-    var request = URLRequest(url: url)
-    request.setValue("Lala2Conf-Updater", forHTTPHeaderField: "User-Agent")
-    var result: Result<Data, Error>!
-    let done = DispatchSemaphore(value: 0)
-    URLSession.shared.dataTask(with: request) { data, _, error in
-      if let data {
-        result = .success(data)
-      } else {
-        result = .failure(error ?? UpdaterError.signatureDownloadFailed)
-      }
-      done.signal()
-    }.resume()
-    _ = done.wait(timeout: .now() + 60)
-    guard let result else { throw UpdaterError.signatureDownloadFailed }
-    let text = try String(decoding: result.get(), as: UTF8.self)
-      .trimmingCharacters(in: .whitespacesAndNewlines)
-    guard let signature = Data(base64Encoded: text), signature.count == 64 else {
-      throw UpdaterError.signatureUnreadable
-    }
-    return signature
   }
 
   private func verify(zipAt zipPath: URL, signature: Data) throws {
