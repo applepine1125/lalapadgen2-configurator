@@ -67,6 +67,10 @@
 
   let busy = false;
 
+  function hasUnwritten() {
+    return Params.pendingCount() > 0 || Keymap.isDirty() || Keymap.isResetOnWrite();
+  }
+
   function renderHeader() {
     let text = '未接続';
     if (Link.isConnected()) {
@@ -81,17 +85,17 @@
     const conn = Link.isConnected();
     const pendingN = Params.pendingCount();
     const keymapDirty = Keymap.isDirty();
-    const resetOnWrite = Keymap.isResetOnWrite();
     const dirtyParts = [];
     if (pendingN > 0) dirtyParts.push(`パッド ${pendingN} 件`);
     if (keymapDirty) dirtyParts.push('キー設定あり');
     $('dirtyIndicator').hidden = dirtyParts.length === 0;
     $('dirtyIndicator').textContent = dirtyParts.length ? `未書き込み: ${dirtyParts.join(' / ')}` : '';
 
-    $('btnWrite').disabled = busy || !conn || !(pendingN > 0 || keymapDirty || resetOnWrite);
+    $('btnWrite').disabled = busy || !conn || !hasUnwritten();
     $('btnReload').disabled = busy || !conn;
     $('btnExport').disabled = busy;
 
+    Params.updateUndoButton();
     Keymap.updateUndoButton();
     if (root.TpAppPresets) root.TpAppPresets.render();
   }
@@ -164,7 +168,11 @@
       if (keymapAction === 'reset') msgs.push('キー設定をファーム既定に戻しました');
       if (writeResult && writeResult.failed > 0) msgs.push(`パッド ${writeResult.failed} 件の書き込みに失敗しました。失敗した行は保留のままです`);
       if (keymapErr) msgs.push('キー設定の書き込みに失敗しました: ' + keymapErr);
-      setStatus(msgs.join('。'), !!keymapErr || (writeResult && writeResult.failed > 0));
+      if (writeResult && writeResult.saveFailed) msgs.push('パッドの設定をキーボードに保存できませんでした(電源を切ると元に戻ります)');
+      const hasError = !!keymapErr || (writeResult && (writeResult.failed > 0 || writeResult.saveFailed));
+      setStatus(msgs.join('。'), hasError);
+    } catch (e) {
+      setStatus('書き込みに失敗しました: ' + errText(e), true);
     } finally {
       setBusy(false);
     }
@@ -172,16 +180,19 @@
 
   async function doReload() {
     if (busy) return;
-    if (Params.pendingCount() > 0 || Keymap.isDirty()) {
+    if (hasUnwritten()) {
       if (!window.confirm('書き込んでいない変更を捨てて、キーボードに保存されている状態に戻します。よろしいですか?')) return;
     }
     setBusy(true);
     try {
+      Keymap.setResetOnWrite(false);
       await Params.reload();
       let keymapNote = '';
       if (await Keymap.ensureLoaded()) await Keymap.reload();
       else keymapNote = '(キー設定は Studio が使えないため読み込んでいません)';
       setStatus('再読み込みしました' + keymapNote);
+    } catch (e) {
+      setStatus('再読み込みに失敗しました: ' + errText(e), true);
     } finally {
       setBusy(false);
     }
@@ -203,8 +214,10 @@
         setStatus('保存に失敗しました: ' + (res.error || '') + savedNote, true);
         return;
       }
+      const savedCount = (res.saved || []).length;
+      if (savedCount === 0) { setStatus('保存しませんでした(上書きをキャンセルしました)'); return; }
       if (keymapText === null) { setStatus('キー設定を読めていないため .conf だけ保存しました'); return; }
-      setStatus(res.dir ? `${res.dir} に ${files.length} 件保存しました` : `${files.length} 件保存しました`);
+      setStatus(res.dir ? `${res.dir} に ${savedCount} 件保存しました` : `${savedCount} 件保存しました`);
     } finally {
       setBusy(false);
     }
@@ -225,7 +238,7 @@
   };
   window.addEventListener('beforeunload', () => { if (Link.isConnected()) Link.disconnect(null, true); });
 
-  const api = { setStatus, showNotice, log, renderHeader, isBusy, setBusy };
+  const api = { setStatus, showNotice, log, renderHeader, isBusy, setBusy, hasUnwritten };
   root.TpAppMain = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 

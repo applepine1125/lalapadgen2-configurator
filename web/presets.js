@@ -35,13 +35,15 @@
     if (!Array.isArray(data.presets)) {
       return { ok: false, error: 'presets が配列ではありません' };
     }
-    const presets = data.presets
-      .filter((p) => p && typeof p.id === 'string' && typeof p.name === 'string')
-      .map((p) => ({
-        ...p,
-        trackpad: p.trackpad || null,
-        keymap: p.keymap || null,
-      }));
+    const seenIds = new Set();
+    const presets = [];
+    for (const p of data.presets) {
+      if (!p || typeof p.id !== 'string' || typeof p.name !== 'string') continue;
+      /* 手で編集されて id が重複すると、上書きや削除が別のプリセットに当たるため後の方を捨てる */
+      if (seenIds.has(p.id)) continue;
+      seenIds.add(p.id);
+      presets.push({ ...p, trackpad: p.trackpad || null, keymap: p.keymap || null });
+    }
     const selectedId = (data.selectedId === DEFAULT_PRESET_ID || presets.some((p) => p.id === data.selectedId))
       ? data.selectedId
       : null;
@@ -171,16 +173,20 @@
       if (pt) for (const n of Object.keys(pt)) names.add(n);
     }
     for (const name of names) {
+      /* ファームが変わってキーボードから消えたパラメータは反映の対象外 */
+      const sides = readableSides.filter((s) => keyboardValue(paramsBySide, s, name) !== undefined);
+      if (!sides.length) continue;
       const presetSidesForName = ['R', 'L'].filter((s) => presetTrackpad[s] && Object.prototype.hasOwnProperty.call(presetTrackpad[s], name));
       const presetValues = presetSidesForName.map((s) => presetTrackpad[s][name]);
       const allSame = presetValues.every((v) => v === presetValues[0]);
-      const coversReadable = readableSides.every((s) => presetSidesForName.includes(s));
+      /* 片側にしか無いパラメータを共通で送ると、持っていない側にも tp set が飛ぶので側ごとに分ける */
+      const coversReadable = sides.length === readableSides.length && sides.every((s) => presetSidesForName.includes(s));
       if (allSame && coversReadable) {
         const v = presetValues[0];
-        const differs = readableSides.some((s) => keyboardValue(paramsBySide, s, name) !== v);
+        const differs = sides.some((s) => keyboardValue(paramsBySide, s, name) !== v);
         if (differs) out.common[name] = v;
       } else {
-        for (const s of readableSides) {
+        for (const s of sides) {
           const pv = presetTrackpad[s] ? presetTrackpad[s][name] : undefined;
           if (pv === undefined) continue;
           if (keyboardValue(paramsBySide, s, name) !== pv) out[s][name] = pv;
