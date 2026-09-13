@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run page tests
-        run: node --test web/
+        run: node --test web/*.test.js
 
       - name: Build app
         run: bash mac/build.sh --build ${{ github.run_number }}
