@@ -237,6 +237,8 @@
     return Date.now() - startReal;
   }
 
+  /* 実機は別スレッドから返すので、ここも 1 ティック遅らせる。同期で返すと postMessage を
+     呼んだ側が応答待ちの Promise を登録する前に解決してしまい、応答を取りこぼす */
   function emit(evt) {
     Promise.resolve().then(() => {
       if (window.tpTunerNative && typeof window.tpTunerNative.onEvent === 'function') {

@@ -54,6 +54,16 @@ test('id か name が文字列でない要素は parseStore で捨てられる',
   assert.equal(r.store.presets[0].id, 'p-1');
 });
 
+test('id が重複した presets を parseStore すると後の方が捨てられる', () => {
+  const raw = JSON.stringify({
+    version: 1, selectedId: 'p-1',
+    presets: [preset({ id: 'p-1', name: 'A' }), preset({ id: 'p-1', name: 'B' })],
+  });
+  const r = P.parseStore(raw);
+  assert.equal(r.store.presets.length, 1);
+  assert.equal(r.store.presets[0].name, 'A');
+});
+
 test('存在しない selectedId を parseStore すると null になる', () => {
   const raw = JSON.stringify({ version: 1, selectedId: 'nope', presets: [preset()] });
   const r = P.parseStore(raw);
@@ -301,6 +311,18 @@ test('trackpadPendingFromPreset はプリセットに無い名前を無視する
   assert.equal(Object.prototype.hasOwnProperty.call(result.R, 'b'), false);
 });
 
+test('trackpadPendingFromPreset はキーボードに無いパラメータを反映しない', () => {
+  const presetTrackpad = { R: { c: 5 }, L: { c: 5 } };
+  const paramsBySide = { R: [{ name: 'a', value: 1 }], L: [{ name: 'a', value: 1 }] };
+  assert.deepEqual(P.trackpadPendingFromPreset(presetTrackpad, paramsBySide), { common: {}, R: {}, L: {} });
+});
+
+test('片側のキーボードにしか無いパラメータは、その側だけの保留になる', () => {
+  const presetTrackpad = { R: { a: 10 }, L: { a: 10 } };
+  const paramsBySide = { R: [{ name: 'a', value: 1 }], L: [{ name: 'b', value: 1 }] };
+  assert.deepEqual(P.trackpadPendingFromPreset(presetTrackpad, paramsBySide), { common: {}, R: { a: 10 }, L: {} });
+});
+
 test('trackpadPendingFromPreset は presetTrackpad が null なら全て空になる', () => {
   assert.deepEqual(P.trackpadPendingFromPreset(null, { R: [{ name: 'a', value: 1 }] }), { common: {}, R: {}, L: {} });
 });
@@ -399,6 +421,19 @@ test('diffCount はパラメータ差分・キー差分・レイヤー数差分(
   assert.equal(P.diffCount(null, null), 0);
 });
 
+test('diffItemCount は左右で同じ名前の差分を 1 項目として数える', () => {
+  assert.equal(P.diffItemCount([{ side: 'R', name: 'a' }, { side: 'L', name: 'a' }], { layerCount: null, keys: [] }), 1);
+  assert.equal(P.diffItemCount([{ side: 'R', name: 'a' }, { side: 'L', name: 'b' }], { layerCount: { preset: 2, screen: 1 }, keys: [{}] }), 4);
+  assert.equal(P.diffItemCount(null, null), 0);
+});
+
+test('左右に同じ名前の差分があるとき、件数と項目数が食い違う(表示の内訳に使う)', () => {
+  const paramDiff = [{ side: 'R', name: 'a' }, { side: 'L', name: 'a' }];
+  const keymapDiff = { layerCount: null, keys: [] };
+  assert.equal(P.diffCount(paramDiff, keymapDiff), 2);
+  assert.equal(P.diffItemCount(paramDiff, keymapDiff), 1);
+});
+
 test('resolveEntry は behavior 名から ID を引き、{ layer } をレイヤー ID に直す', () => {
   const layers = [{ id: 10 }, { id: 20 }];
   assert.deepEqual(P.resolveEntry({ behavior: 'Key Press', param1: 5, param2: 0 }, BEHAVIORS, layers), { behaviorId: 1, param1: 5, param2: 0 });
@@ -443,4 +478,26 @@ test('planKeymapBindings は同じ位置を ops に出さない', () => {
   const presetKeymap = { layers: [{ name: 'Default', bindings: [{ behavior: 'Key Press', param1: 1, param2: 0 }] }] };
   const plan = P.planKeymapBindings(presetKeymap, keymap, BEHAVIORS);
   assert.deepEqual(plan, { ops: [], skipped: [] });
+});
+
+test('planKeymapBindings はプリセットの非表示位置(null)を ops にも skipped にも入れない', () => {
+  const keymap = { layers: [{ id: 10, bindings: [{ behaviorId: 1, param1: 1, param2: 0 }, { behaviorId: 1, param1: 2, param2: 0 }] }] };
+  const presetKeymap = { layers: [{ name: 'Default', bindings: [null, { behavior: 'Key Press', param1: 9, param2: 0 }] }] };
+  const plan = P.planKeymapBindings(presetKeymap, keymap, BEHAVIORS);
+  assert.deepEqual(plan, {
+    ops: [{ layerIndex: 0, layerId: 10, pos: 1, binding: { behaviorId: 1, param1: 9, param2: 0 } }],
+    skipped: [],
+  });
+});
+
+test('keymapSnapshot は metadata の無い behavior のパラメータをそのまま持つ', () => {
+  const keymap = { layers: [{ id: 10, name: 'Default', bindings: [{ behaviorId: 3, param1: 7, param2: 8 }] }] };
+  const snap = P.keymapSnapshot(keymap, BEHAVIORS, []);
+  assert.deepEqual(snap.layers[0].bindings[0], { behavior: 'Transparent', param1: 7, param2: 8 });
+});
+
+test('keymapSnapshot は Momentary Layer が存在しないレイヤーを指すとき生の値を残す', () => {
+  const keymap = { layers: [{ id: 10, name: 'Default', bindings: [{ behaviorId: 2, param1: 99, param2: 0 }] }] };
+  const snap = P.keymapSnapshot(keymap, BEHAVIORS, []);
+  assert.deepEqual(snap.layers[0].bindings[0], { behavior: 'Momentary Layer', param1: 99, param2: 0 });
 });

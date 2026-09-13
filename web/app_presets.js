@@ -37,13 +37,12 @@
   }
 
   function diffSummaryText() {
-    const paramSummary = Params.presetDiffSummary();
+    const paramDiff = Params.presetDiff();
     const keymapDiff = isDefaultSelected() ? { layerCount: null, keys: [] } : Keymap.presetDiff();
-    const keymapCount = keymapDiff.keys.length + (keymapDiff.layerCount ? 1 : 0);
-    const count = paramSummary.count + keymapCount;
-    const items = paramSummary.items + keymapCount;
+    const count = Presets.diffCount(paramDiff, keymapDiff);
+    const items = Presets.diffItemCount(paramDiff, keymapDiff);
     if (count === 0) return 'プリセットと一致';
-    const detail = count !== items ? `(左右 ${paramSummary.items} 項目)` : '';
+    const detail = count !== items ? `(左右 ${items} 項目)` : '';
     return `差分 ${count} 件${detail}`;
   }
 
@@ -135,6 +134,11 @@
     const prevId = store.selectedId;
     if (newId === prevId && newId !== DEFAULT_ID) return;
     if (newId === null) {
+      if (Keymap.isResetOnWrite()
+        && !window.confirm('書き込み時にキー設定をファーム既定へ戻す予定を取り消します。よろしいですか?')) {
+        sel.value = prevId || '';
+        return;
+      }
       root.TpAppMain.setBusy(true);
       try {
         store = Presets.selectPreset(store, null);
@@ -147,7 +151,7 @@
       return;
     }
     if (newId === DEFAULT_ID) {
-      const hasPending = Params.pendingCount() > 0 || Keymap.isDirty();
+      const hasPending = root.TpAppMain.hasUnwritten();
       if (hasPending) {
         const ok = window.confirm('書き込んでいない変更を捨てて、default(ファーム既定)の内容を画面に反映します。よろしいですか?');
         if (!ok) { sel.value = prevId || ''; return; }
@@ -170,7 +174,7 @@
     }
     const preset = Presets.findPreset(store, newId);
     if (!preset) { sel.value = prevId || ''; return; }
-    const hasPending = Params.pendingCount() > 0 || Keymap.isDirty();
+    const hasPending = root.TpAppMain.hasUnwritten();
     if (hasPending) {
       const ok = window.confirm(`書き込んでいない変更を捨てて、プリセット「${preset.name}」の内容を画面に反映します。よろしいですか?`);
       if (!ok) { sel.value = prevId || ''; return; }
@@ -241,6 +245,7 @@
     if (!window.confirm(`プリセット「${preset.name}」を今の画面の状態で上書きします。よろしいですか?`)) return;
     root.TpAppMain.setBusy(true);
     try {
+      await Keymap.ensureLoaded();
       const trackpad = screenTrackpadOrNull();
       const keymapSnap = Keymap.snapshot();
       const now = new Date().toISOString();

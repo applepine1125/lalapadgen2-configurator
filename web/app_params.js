@@ -136,7 +136,9 @@
 
   function updateUndoButton() {
     const btn = $('btnParamsUndo');
-    if (btn) btn.disabled = pendingCount() === 0;
+    if (!btn) return;
+    const busy = root.TpAppMain ? root.TpAppMain.isBusy() : false;
+    btn.disabled = busy || pendingCount() === 0;
   }
 
   function notifyHeaderChanged() {
@@ -187,11 +189,6 @@
     return Presets.trackpadDiff(presetTrackpad, screenTrackpad());
   }
 
-  function presetDiffSummary() {
-    const diff = presetDiff();
-    return { count: diff.length, items: new Set(diff.map((d) => d.name)).size };
-  }
-
   function applyPresetTrackpad(trackpad) {
     pending = Presets.trackpadPendingFromPreset(trackpad, { R: params.R, L: params.L });
     renderParams();
@@ -212,9 +209,7 @@
   function applyDefaults() {
     const target = defaultTrackpad();
     presetTrackpad = target;
-    pending = Presets.trackpadPendingFromPreset(target, { R: params.R, L: params.L });
-    renderParams();
-    notifyHeaderChanged();
+    applyPresetTrackpad(target);
   }
 
   function presetDiffForName(name, screen) {
@@ -586,9 +581,9 @@
 
   async function write() {
     const sides = Link.activeSides();
-    if (!sides.length) return { written: 0, failed: 0, total: 0 };
+    if (!sides.length) return { written: 0, failed: 0, total: 0, saveFailed: false };
     const cmds = T.pendingCommands(pending, sides);
-    if (!cmds.length) return { written: 0, failed: 0, total: 0 };
+    if (!cmds.length) return { written: 0, failed: 0, total: 0, saveFailed: false };
     const failed = [];
     for (const c of cmds) {
       const parts = c.cmd.split(' ');
@@ -598,7 +593,15 @@
       const ok = lines.some((l) => l.startsWith('OK'));
       if (!ok) failed.push({ side: c.side, name, value });
     }
-    for (const s of sides) await Link.runSimpleOnSide(s, 'tp save');
+    let saveFailed = false;
+    for (const s of sides) {
+      try {
+        await Link.runSimpleOnSide(s, 'tp save');
+      } catch (e) {
+        saveFailed = true;
+        root.TpAppMain.log(`[${s}] ` + errText(e));
+      }
+    }
     pending = rebuildPendingFromFailures(failed);
     for (const s of sides) {
       await loadParamsForSide(s);
@@ -606,7 +609,7 @@
     }
     notifyHeaderChanged();
     renderParams();
-    return { written: cmds.length - failed.length, failed: failed.length, total: cmds.length };
+    return { written: cmds.length - failed.length, failed: failed.length, total: cmds.length, saveFailed };
   }
 
   async function reload() {
@@ -634,7 +637,7 @@
 
   const api = {
     render: renderParams, reset, pendingCount, paramsForSuggest, loadAllParams, refreshInfoForSide,
-    screenTrackpad, setPresetTrackpad, presetDiff, presetDiffSummary, applyPresetTrackpad,
+    screenTrackpad, setPresetTrackpad, presetDiff, applyPresetTrackpad, updateUndoButton,
     defaultTrackpad, applyDefaults,
     write, reload, undoPending, exportConfText,
   };
