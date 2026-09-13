@@ -136,11 +136,11 @@ final class Updater {
   private func downloadZip(from url: URL, signature: Data) {
     URLSession.shared.downloadTask(with: url) { [weak self] location, _, error in
       guard let self else { return }
+      /* 一時ファイルはこのクロージャを抜けると消えるので、作業用の場所へ移してから検証する */
+      let workDir = FileManager.default.temporaryDirectory
+        .appendingPathComponent("lala2conf-update-\(UUID().uuidString)")
       do {
         guard let location else { throw error ?? UpdaterError.downloadFailed }
-        /* 一時ファイルはこのクロージャを抜けると消えるので、作業用の場所へ移してから検証する */
-        let workDir = FileManager.default.temporaryDirectory
-          .appendingPathComponent("lala2conf-update-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
         let zipPath = workDir.appendingPathComponent("update.zip")
         try FileManager.default.moveItem(at: location, to: zipPath)
@@ -148,6 +148,8 @@ final class Updater {
         try self.verify(zipAt: zipPath, signature: signature)
         try self.install(zipAt: zipPath, workDir: workDir)
       } catch {
+        /* 失敗した回の展開物を残さない */
+        try? FileManager.default.removeItem(at: workDir)
         DispatchQueue.main.async { self.showInstallError(error) }
       }
     }.resume()
@@ -162,8 +164,6 @@ final class Updater {
   }
 
   private func install(zipAt zipPath: URL, workDir: URL) throws {
-    defer { try? FileManager.default.removeItem(at: workDir) }
-
     try run("/usr/bin/ditto", ["-x", "-k", zipPath.path, workDir.path])
 
     let extractedApps = try FileManager.default.contentsOfDirectory(at: workDir, includingPropertiesForKeys: nil)
@@ -188,6 +188,8 @@ final class Updater {
       throw error
     }
     try? FileManager.default.removeItem(at: backupURL)
+    /* 再起動を仕掛けたあとに片付けると、終了が先に来て作業用の場所が残る。ここで消しておく */
+    try? FileManager.default.removeItem(at: workDir)
 
     /* 実行中の自分がいる間は open が既存インスタンスを前面に出すだけなので、-n で別プロセスとして起動してから終了する */
     DispatchQueue.main.async {
