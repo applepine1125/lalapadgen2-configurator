@@ -1,4 +1,10 @@
 import AppKit
+import CryptoKit
+
+/* リリースの zip は、手元にしか無い ed25519 の鍵で署名してから公開する(mac/release.sh)。
+ * ここに埋め込んだ公開鍵で検証し、合わないものは入れない。
+ * 鍵を CI に置くとリポジトリを取られた相手が署名できてしまうので、置かないこと。 */
+private let updatePublicKeyBase64 = "csCPvGdPtFHTl47CcyTa//gMAfV+FhpA0bsWPfcMS4Q="
 
 final class Updater {
   private let repoOwner = "applepine1125"
@@ -61,9 +67,14 @@ final class Updater {
         self.handleCheckFailure(silent: silent, reason: "更新アセットが見つかりません")
         return
       }
+      /* 署名が無いリリースには入れ替えない(署名前の下書きが公開された場合など) */
+      guard let signatureAsset = best.release.assets.first(where: { $0.name == asset.name + ".sig" }) else {
+        self.handleCheckFailure(silent: silent, reason: "署名ファイル(\(asset.name).sig)が見つかりません")
+        return
+      }
 
       DispatchQueue.main.async {
-        self.confirmAndUpdate(build: best.build, asset: asset)
+        self.confirmAndUpdate(build: best.build, asset: asset, signatureAsset: signatureAsset)
       }
     }.resume()
   }
@@ -85,35 +96,74 @@ final class Updater {
     alert.runModal()
   }
 
-  private func confirmAndUpdate(build: Int, asset: GhAsset) {
+  private func confirmAndUpdate(build: Int, asset: GhAsset, signatureAsset: GhAsset) {
     let alert = NSAlert()
     alert.messageText = "新しいバージョンがあります"
     alert.informativeText = "新しいバージョン(build \(build))があります。更新しますか?"
     alert.addButton(withTitle: "更新する")
     alert.addButton(withTitle: "あとで")
-    guard alert.runModal() == .alertFirstButtonReturn, let url = URL(string: asset.browserDownloadURL) else { return }
-    downloadAndInstall(from: url)
+    guard alert.runModal() == .alertFirstButtonReturn,
+      let url = URL(string: asset.browserDownloadURL),
+      let signatureURL = URL(string: signatureAsset.browserDownloadURL)
+    else { return }
+    downloadAndInstall(from: url, signatureURL: signatureURL)
   }
 
-  private func downloadAndInstall(from url: URL) {
+  private func downloadAndInstall(from url: URL, signatureURL: URL) {
     URLSession.shared.downloadTask(with: url) { [weak self] location, _, error in
       guard let self else { return }
       do {
         guard let location else { throw error ?? UpdaterError.downloadFailed }
-        try self.install(downloadedZip: location)
+        /* 一時ファイルはこのクロージャを抜けると消えるので、作業用の場所へ移してから検証する */
+        let workDir = FileManager.default.temporaryDirectory
+          .appendingPathComponent("lala2conf-update-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        let zipPath = workDir.appendingPathComponent("update.zip")
+        try FileManager.default.moveItem(at: location, to: zipPath)
+
+        let signature = try self.fetchSignature(from: signatureURL)
+        try self.verify(zipAt: zipPath, signature: signature)
+        try self.install(zipAt: zipPath, workDir: workDir)
       } catch {
         DispatchQueue.main.async { self.showInstallError(error) }
       }
     }.resume()
   }
 
-  private func install(downloadedZip: URL) throws {
-    let workDir = FileManager.default.temporaryDirectory.appendingPathComponent("tp-tuner-update-\(UUID().uuidString)")
-    try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+  private func fetchSignature(from url: URL) throws -> Data {
+    var request = URLRequest(url: url)
+    request.setValue("Lala2Conf-Updater", forHTTPHeaderField: "User-Agent")
+    var result: Result<Data, Error>!
+    let done = DispatchSemaphore(value: 0)
+    URLSession.shared.dataTask(with: request) { data, _, error in
+      if let data {
+        result = .success(data)
+      } else {
+        result = .failure(error ?? UpdaterError.signatureDownloadFailed)
+      }
+      done.signal()
+    }.resume()
+    _ = done.wait(timeout: .now() + 60)
+    guard let result else { throw UpdaterError.signatureDownloadFailed }
+    let text = try String(decoding: result.get(), as: UTF8.self)
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    guard let signature = Data(base64Encoded: text), signature.count == 64 else {
+      throw UpdaterError.signatureUnreadable
+    }
+    return signature
+  }
+
+  private func verify(zipAt zipPath: URL, signature: Data) throws {
+    guard let rawKey = Data(base64Encoded: updatePublicKeyBase64),
+      let key = try? Curve25519.Signing.PublicKey(rawRepresentation: rawKey)
+    else { throw UpdaterError.publicKeyUnusable }
+    let data = try Data(contentsOf: zipPath)
+    guard key.isValidSignature(signature, for: data) else { throw UpdaterError.signatureMismatch }
+  }
+
+  private func install(zipAt zipPath: URL, workDir: URL) throws {
     defer { try? FileManager.default.removeItem(at: workDir) }
 
-    let zipPath = workDir.appendingPathComponent("update.zip")
-    try FileManager.default.moveItem(at: downloadedZip, to: zipPath)
     try run("/usr/bin/ditto", ["-x", "-k", zipPath.path, workDir.path])
 
     let extractedApps = try FileManager.default.contentsOfDirectory(at: workDir, includingPropertiesForKeys: nil)
@@ -121,6 +171,8 @@ final class Updater {
     guard let newAppURL = extractedApps.first else {
       throw UpdaterError.appNotFoundInArchive
     }
+    /* 自分で落とした zip には quarantine が付かない(Info.plist に LSFileQuarantineEnabled が無いため)ので
+     * 普段は空振りするが、手で入れた zip 由来の場合に備えて残している */
     try run("/usr/bin/xattr", ["-dr", "com.apple.quarantine", newAppURL.path])
 
     let currentBundleURL = Bundle.main.bundleURL
@@ -190,12 +242,20 @@ private struct GhRelease: Decodable {
 
 private enum UpdaterError: Error, CustomStringConvertible {
   case downloadFailed
+  case signatureDownloadFailed
+  case signatureUnreadable
+  case signatureMismatch
+  case publicKeyUnusable
   case appNotFoundInArchive
   case commandFailed(String, Int32)
 
   var description: String {
     switch self {
     case .downloadFailed: return "ダウンロードに失敗しました"
+    case .signatureDownloadFailed: return "署名のダウンロードに失敗しました"
+    case .signatureUnreadable: return "署名を読めません"
+    case .signatureMismatch: return "署名が合いません。更新を中止しました"
+    case .publicKeyUnusable: return "検証用の公開鍵が埋め込まれていません"
     case .appNotFoundInArchive: return "アーカイブ内にアプリが見つかりません"
     case .commandFailed(let path, let status): return "\(path) が失敗しました(status \(status))"
     }
