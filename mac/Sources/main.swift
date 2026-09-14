@@ -57,7 +57,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     let appMenuItem = NSMenuItem()
     let appMenu = NSMenu()
-    let checkUpdateItem = NSMenuItem(title: "更新を確認…", action: #selector(checkForUpdates), keyEquivalent: "")
+    let aboutItem = NSMenuItem(title: "About LalaPadGen2 Configurator", action: #selector(showAbout), keyEquivalent: "")
+    aboutItem.target = self
+    appMenu.addItem(aboutItem)
+    appMenu.addItem(NSMenuItem.separator())
+    let checkUpdateItem = NSMenuItem(title: "Check for Updates…", action: #selector(checkForUpdates), keyEquivalent: "")
     checkUpdateItem.target = self
     appMenu.addItem(checkUpdateItem)
     appMenu.addItem(NSMenuItem.separator())
@@ -82,6 +86,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
   @objc private func checkForUpdates() {
     updater.checkFromMenu()
+  }
+
+  /* 標準のパネルはアイコン・アプリ名・バージョン・著作権表示を Info.plist から自分で組み立てる */
+  @objc private func showAbout() {
+    NSApplication.shared.orderFrontStandardAboutPanel(nil)
   }
 }
 
