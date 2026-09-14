@@ -25,7 +25,7 @@ jobs:
         run: bash mac/build.sh --build ${{ github.run_number }}
 
       - name: Package zip
-        run: ditto -c -k --keepParent mac/build/Lala2Conf.app "Lala2Conf-b${{ github.run_number }}.zip"
+        run: ditto -c -k --keepParent "mac/build/LalaPadGen2 Configurator.app" "LalaPadGen2Configurator-b${{ github.run_number }}.zip"
 
       - name: Create GitHub release
         env:
@@ -33,7 +33,7 @@ jobs:
         run: |
           notes="$(git log -1 --format='%h %s')"
           # 下書きで作る。手元の鍵で署名して公開するまでアプリからは見えない(mac/release.sh)
-          gh release create "lala2conf-b${{ github.run_number }}" "Lala2Conf-b${{ github.run_number }}.zip" \
+          gh release create "lala2conf-b${{ github.run_number }}" "LalaPadGen2Configurator-b${{ github.run_number }}.zip" \
             --title "LalaPadGen2 Configurator build ${{ github.run_number }}" \
             --notes "$notes" \
             --draft

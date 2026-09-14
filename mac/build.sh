@@ -29,7 +29,7 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-APP_DIR="build/Lala2Conf.app"
+APP_DIR="build/LalaPadGen2 Configurator.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
@@ -41,7 +41,7 @@ mkdir -p "$WEB_DIR"
 
 swiftc -O -swift-version 5 -sdk "$(xcrun --show-sdk-path)" \
   -framework AppKit -framework WebKit -framework CoreBluetooth -framework IOKit \
-  Sources/*.swift -o "$MACOS_DIR/Lala2Conf"
+  Sources/*.swift -o "$MACOS_DIR/LalaPadGen2Configurator"
 
 cp Info.plist "$CONTENTS_DIR/Info.plist"
 VERSION="$(cat VERSION)"
@@ -75,9 +75,11 @@ codesign --force --sign - "$APP_DIR"
 echo "ビルド完了: $APP_DIR (version $VERSION, build $BUILD_NUMBER)"
 
 if [ "$DO_INSTALL" = "1" ]; then
-  rm -rf /Applications/Lala2Conf.app
-  ditto "$APP_DIR" /Applications/Lala2Conf.app
-  echo "インストール完了: /Applications/Lala2Conf.app"
+  # Lala2Conf だった頃のバンドルを消さないと、同じアプリが二つ並ぶ
+  rm -rf "/Applications/Lala2Conf.app"
+  rm -rf "/Applications/LalaPadGen2 Configurator.app"
+  ditto "$APP_DIR" "/Applications/LalaPadGen2 Configurator.app"
+  echo "インストール完了: /Applications/LalaPadGen2 Configurator.app"
 fi
 
 if [ "$DO_RUN" = "1" ]; then

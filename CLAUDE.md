@@ -13,7 +13,7 @@ LalaPad Gen2 のトラックパッドとキー設定を調整する macOS アプ
 ```sh
 node --test web/*.test.js        # ページのテスト(ディレクトリ指定は CI の Node で失敗する)
 bash mac/build.sh --run          # ビルドして起動
-bash mac/build.sh --install      # /Applications/Lala2Conf.app に入れる
+bash mac/build.sh --install      # /Applications/LalaPadGen2 Configurator.app に入れる
 bash mac/release.sh              # 下書きリリースに署名して公開する(下記)
 ```
 
