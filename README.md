@@ -1,6 +1,6 @@
-# Lala2Conf
+# LalaPadGen2 Configurator
 
-LalaPad Gen2 のトラックパッドとキー設定を、つなぎながら調整するための道具です。macOS アプリ(Lala2Conf)と、その中身のページで構成しています。
+LalaPad Gen2 のトラックパッドとキー設定を、つなぎながら調整するための道具です。macOS アプリ(LalaPadGen2 Configurator)と、その中身のページで構成しています。
 
 - トラックパッドのパラメータを読み書きし、書き込んだ結果をその場で試せます
 - パッドの接触と、検知したジェスチャをライブで表示します

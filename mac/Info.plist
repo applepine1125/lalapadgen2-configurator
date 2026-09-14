@@ -5,7 +5,9 @@
   <key>CFBundleIdentifier</key>
   <string>dev.applepine1125.lala2conf</string>
   <key>CFBundleName</key>
-  <string>Lala2Conf</string>
+  <string>LalaPadGen2 Configurator</string>
+  <key>CFBundleDisplayName</key>
+  <string>LalaPadGen2 Configurator</string>
   <key>CFBundleExecutable</key>
   <string>Lala2Conf</string>
   <key>CFBundlePackageType</key>

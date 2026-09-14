@@ -196,7 +196,7 @@
     const layerBlocks = layers.map((layer, idx) => renderLayer(layer, idx, behaviors, layers, keys, unresolved));
 
     const header = [
-      '// tp-tuner が書き出したキーマップ',
+      '// LalaPadGen2 Configurator が書き出したキーマップ',
       '// config/lalapadgen2.keymap の keymap { ... } ブロックをこの内容で置き換える',
     ];
     if (unresolved.size) {

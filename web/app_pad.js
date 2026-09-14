@@ -67,8 +67,8 @@
   }
 
   /*
-   * キー設定タブでは Studio の応答(数 KB の indicate)と tp-tuner の送信(ライブ・要約)が
-   * 同じ BLE リンクを取り合って応答が途切れるため、タブの間は tp-tuner 側を黙らせる
+   * キー設定タブでは Studio の応答(数 KB の indicate)とトラックパッドの送信(ライブ・要約)が
+   * 同じ BLE リンクを取り合って応答が途切れるため、タブの間はトラックパッド側を黙らせる
    */
   let trackpadQuiet = false;
   async function setTrackpadQuiet(quiet) {

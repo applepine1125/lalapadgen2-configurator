@@ -49,10 +49,9 @@ VERSION="$(cat VERSION)"
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$CONTENTS_DIR/Info.plist"
 
 ICON_WORK_DIR="$(mktemp -d)"
-ICON_PNG="$ICON_WORK_DIR/icon-1024.png"
+ICON_PNG="Icon/icon-source.png"
 ICONSET_DIR="$ICON_WORK_DIR/AppIcon.iconset"
 mkdir -p "$ICONSET_DIR"
-swift Icon/make-icon.swift "$ICON_PNG"
 for base_size in 16 32 128 256 512; do
   sips -z "$base_size" "$base_size" "$ICON_PNG" --out "$ICONSET_DIR/icon_${base_size}x${base_size}.png" >/dev/null
   double_size=$((base_size * 2))

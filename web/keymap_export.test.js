@@ -119,7 +119,7 @@ test('exportKeymap は DEFAULT_LAYER 相当の binding をキー位置順・行�
     key(0, 300), key(100, 300),
   ] };
   const text = E.exportKeymap({ keymap, behaviors: BEHAVIORS, layout });
-  assert.match(text, /^\/\/ tp-tuner が書き出したキーマップ\n/);
+  assert.match(text, /^\/\/ LalaPadGen2 Configurator が書き出したキーマップ\n/);
   assert.ok(text.includes('layer_0 {'));
   assert.ok(text.includes('display-name = "Default";'));
   const lines = text.split('\n');

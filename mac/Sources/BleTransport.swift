@@ -132,9 +132,9 @@ final class BleTransport: NSObject {
   private func statusMessage(for state: CBManagerState) -> String {
     switch state {
     case .poweredOff:
-      return "Bluetooth がオフになっています。システム設定でオンにしてください"
+      return "この Mac の Bluetooth がオフです。システム設定 > Bluetooth でオンにしてください"
     case .unauthorized:
-      return "Bluetooth の使用が許可されていません。システム設定 > プライバシーとセキュリティ > Bluetooth で tp-tuner を許可してください"
+      return "Bluetooth の使用が許可されていません。システム設定 > プライバシーとセキュリティ > Bluetooth で LalaPadGen2 Configurator を許可してください"
     default:
       return "Bluetooth を初期化しています"
     }
@@ -161,9 +161,13 @@ extension BleTransport: CBCentralManagerDelegate {
       delegate?.bleTransportStudioClosed(reason: "Bluetooth が停止したため切断されました")
     }
     if central.state != lastReportedState {
+      /* オフの間に出したメッセージを消さないと、BT が戻った後も「オフです」と言い続けてしまう */
+      let hadProblem = lastReportedState.map { $0 != .poweredOn } ?? false
       lastReportedState = central.state
       if central.state == .poweredOff || central.state == .unauthorized {
         delegate?.bleTransportDidUpdateStatus(statusMessage(for: central.state))
+      } else if central.state == .poweredOn, hadProblem {
+        delegate?.bleTransportDidUpdateStatus("")
       }
     }
     if central.state == .poweredOn, let id = pendingConnectId {
@@ -216,7 +220,7 @@ extension BleTransport: CBPeripheralDelegate {
       delegate?.bleTransportStudioReady(available: false)
     }
     guard let service = peripheral.services?.first(where: { $0.uuid == serviceUUID }) else {
-      pendingDisconnectReason = "tp-tuner サービスがありません(ファームが古い)"
+      pendingDisconnectReason = "調整用の GATT サービスがありません(ファームが古い)"
       centralManager.cancelPeripheralConnection(peripheral)
       return
     }
@@ -235,7 +239,7 @@ extension BleTransport: CBPeripheralDelegate {
       return
     }
     guard let characteristics = service.characteristics else {
-      pendingDisconnectReason = "tp-tuner サービスがありません(ファームが古い)"
+      pendingDisconnectReason = "調整用の GATT サービスがありません(ファームが古い)"
       centralManager.cancelPeripheralConnection(peripheral)
       return
     }
@@ -248,7 +252,7 @@ extension BleTransport: CBPeripheralDelegate {
       }
     }
     if streamCharacteristic == nil {
-      pendingDisconnectReason = "tp-tuner サービスがありません(ファームが古い)"
+      pendingDisconnectReason = "調整用の GATT サービスがありません(ファームが古い)"
       centralManager.cancelPeripheralConnection(peripheral)
     }
   }

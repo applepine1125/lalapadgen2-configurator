@@ -1,4 +1,4 @@
-# Lala2Conf
+# LalaPadGen2 Configurator
 
 LalaPad Gen2 のトラックパッドとキー設定を調整する macOS アプリと、その中身のページ。
 ファームウェア側は [zmk-config-LalaPadGen2](https://github.com/applepine1125/zmk-config-LalaPadGen2)。

@@ -17,7 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
       backing: .buffered,
       defer: false
     )
-    window.title = "tp-tuner"
+    window.title = "LalaPadGen2 Configurator"
     window.center()
     window.contentView = bridge.webView
     window.delegate = self
@@ -61,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     checkUpdateItem.target = self
     appMenu.addItem(checkUpdateItem)
     appMenu.addItem(NSMenuItem.separator())
-    appMenu.addItem(withTitle: "Quit tp-tuner", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+    appMenu.addItem(withTitle: "Quit LalaPadGen2 Configurator", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
     appMenuItem.submenu = appMenu
     mainMenu.addItem(appMenuItem)
 

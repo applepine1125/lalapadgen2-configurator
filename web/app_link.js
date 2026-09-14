@@ -14,6 +14,7 @@
   const LASTPORT_KEY = 'tp-tuner.lastPort';
   const PRESETS_KEY = 'tp-tuner.presets';
   const DISCONNECTED_MSG = '切断されました。再接続を待っています';
+  const NO_DEVICE_MSG = 'キーボードが見つかりません。電源が入っているか、Mac とペアリング済みか(USB ならケーブル)を確認してください';
   const SIDE_LABEL = { R: '右手', L: '左手' };
 
   function errText(e) {
@@ -584,7 +585,10 @@
   function handleNativeDevices(devices) {
     lastDevices = devices;
     if (awaitingDevicePick) {
-      if (devices.length === 1) {
+      if (devices.length === 0) {
+        hideDevicePanel();
+        setStatus(NO_DEVICE_MSG, true);
+      } else if (devices.length === 1) {
         awaitingDevicePick = false;
         hideDevicePanel();
         connectToDevice(devices[0]);
