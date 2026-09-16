@@ -15,6 +15,7 @@
 
   const GROUPS = [
     { title: '1本指タップ / タップドラッグ', names: ['1f_tap_enable', '1f_tap_max_ms', '1f_tap_move', '1f_presshold_enable', '1f_tapdrag_gap_max_ms', '1f_release_grace_ms', '1f_drag_hold_ms'] },
+    { title: 'カーソル移動量(速度別ゲイン)', names: ['cursor_slow_speed', 'cursor_fast_speed', 'cursor_slow_gain_x100', 'cursor_fast_gain_x100'] },
     { title: '2本指タップ / スクロール / ピンチ', names: ['2f_tap_enable', '2f_tap_max_ms', '2f_tap_move', '2f_presshold_enable', '2f_tapdrag_gap_max_ms', 'scroll_x_enable', 'scroll_y_enable', '2f_scroll_start_move', '2f_scroll_slow_speed', '2f_scroll_fast_speed', '2f_scroll_slow_gain_x100', '2f_scroll_fast_gain_x100', '2f_pinch_enable', '2f_pinch_start_distance', '2f_pinch_ratio_x10', '2f_pinch_wheel_gain_x10'] },
     { title: '3本指', names: ['3f_tap_enable', '3f_tap_max_ms', '3f_tap_move', '3f_presshold_enable', '3f_tapdrag_gap_max_ms', '3f_swipe_threshold'] },
     { title: '慣性', names: ['cursor_inertia_enable', 'cursor_inertia_decay', 'cursor_inertia_recent_window_ms', 'cursor_inertia_stale_gap_ms', 'cursor_inertia_min_samples', 'cursor_inertia_min_avg_speed', 'scroll_inertia_enable', 'scroll_inertia_decay', 'scroll_inertia_recent_window_ms', 'scroll_inertia_stale_gap_ms', 'scroll_inertia_min_samples', 'scroll_inertia_min_avg_speed'] },
@@ -32,6 +33,10 @@
     '1f_tapdrag_gap_max_ms': { what: 'タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりのダブルタップでもドラッグに入るがシングルクリックの確定が遅れる', down: 'クリックの確定は速いが素早く触れ直さないとドラッグに入らない' },
     '1f_release_grace_ms': { what: 'ドラッグ中に指の検出が一瞬切れても続ける時間(ms)。0 で猶予なし(従来どおり)', up: '指が浮いても切れにくいが、離したときの反応が遅れる', down: '離したときの反応は速いが、ドラッグが途中で切れやすい' },
     '1f_drag_hold_ms': { what: '2 回目の接触がこの時間を超えたらドラッグに確定する(ms)。0 で「タップと見なす押下時間の上限」(1f_tap_max_ms)を使う', up: '長く押さないとドラッグに確定しない(クリックになりやすい)', down: '短く押しただけでドラッグに確定する(クリックになりにくい)' },
+    cursor_slow_speed: { what: 'この速さ(1 フレームあたりの移動量)以下を「ゆっくり」とみなす', up: 'ゆっくり扱いになる範囲が広がる', down: 'ゆっくり扱いになる範囲が狭まる' },
+    cursor_fast_speed: { what: 'この速さ(1 フレームあたりの移動量)以上を「速い」とみなす', up: '速い扱いになりにくくなる', down: '速い扱いになりやすくなる' },
+    cursor_slow_gain_x100: { what: 'ゆっくり動かしたときのカーソル移動量の倍率(100 = 等倍)', up: 'ゆっくり動かしたときにカーソルが大きく動く', down: 'ゆっくり動かしたときにカーソルが小さく動く(細かい操作がしやすい)' },
+    cursor_fast_gain_x100: { what: '速く動かしたときのカーソル移動量の倍率(100 = 等倍)。間の速さでは 2 つの倍率を補間する', up: '速く振ったときにカーソルが遠くまで飛ぶ', down: '速く振っても移動量が伸びない' },
     '2f_tap_enable': { what: '2 本指タップを右クリックにする', on: '2 本指タップでクリックする', off: '2 本指タップでクリックしない' },
     '2f_tap_max_ms': { what: '2 本指タップと見なす押下時間の上限(ms)', up: '長めのタップも拾うが短い押し込みもクリックになる', down: '素早いタップだけ拾う' },
     '2f_tap_move': { what: '2 本指タップ中に許す移動量', up: '指がぶれてもタップになる', down: '少しの動きでスクロール扱いになる' },
