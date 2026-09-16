@@ -667,3 +667,34 @@ test('現在値がファームの最小値を下回っていても、practicalRa
 test('current が渡されないとき、practicalRange は現在値による拡張をせず実用レンジをそのまま返す', () => {
   assert.deepEqual(T.practicalRange('active_mode_sampling_period_ms', 1, 65535, undefined), { min: 1, max: 100 });
 });
+
+test('touch_clear_threshold が touch_set_threshold 以上のとき、validateParams するとその組が違反として返る', () => {
+  const values = { touch_set_threshold: 30, touch_clear_threshold: 30 };
+  const v = T.validateParams((n) => values[n]);
+  assert.equal(v.length, 1);
+  assert.deepEqual(v[0].names, ['touch_clear_threshold', 'touch_set_threshold']);
+  assert.match(v[0].message, /touch_clear_threshold/);
+});
+
+test('slow が fast と等しいとき、validateParams すると違反にならない(補間しない二値扱いは許容)', () => {
+  const values = { '2f_scroll_slow_speed': 40, '2f_scroll_fast_speed': 40, cursor_slow_speed: 10, cursor_fast_speed: 10 };
+  assert.deepEqual(T.validateParams((n) => values[n]), []);
+});
+
+test('slow が fast を超えるとき、validateParams するとスクロールとカーソルの両方が違反として返る', () => {
+  const values = { '2f_scroll_slow_speed': 50, '2f_scroll_fast_speed': 40, cursor_slow_speed: 100, cursor_fast_speed: 90, dynamic_filter_bottom_speed: 600, dynamic_filter_top_speed: 511 };
+  const names = T.validateParams((n) => values[n]).map((x) => x.names[0]);
+  assert.deepEqual(names, ['2f_scroll_slow_speed', 'cursor_slow_speed', 'dynamic_filter_bottom_speed']);
+});
+
+test('片方の値が無い(未接続・旧ファーム)とき、validateParams するとその組は検査しない', () => {
+  const values = { touch_set_threshold: 30, '2f_scroll_slow_speed': 50 };
+  assert.deepEqual(T.validateParams((n) => values[n]), []);
+});
+
+test('PARAM_RULES の名前は説明文に含まれ、lower と upper は別の名前になっている', () => {
+  for (const r of T.PARAM_RULES) {
+    assert.notEqual(r.lower, r.upper);
+    assert.ok(r.message.includes(r.lower) && r.message.includes(r.upper), r.message);
+  }
+});

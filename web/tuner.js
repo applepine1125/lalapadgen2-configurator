@@ -227,6 +227,31 @@
     return dep.all.every((n) => !!getValue(n));
   }
 
+  // パラメータ同士の大小関係。lower が upper を超える(strict なら以上になる)と、ファーム側で
+  // 補間が二値に落ちたり(slow/fast)、ヒステリシスが無くなったり(set/clear)して意図した挙動にならない
+  const PARAM_RULES = [
+    { lower: 'touch_clear_threshold', upper: 'touch_set_threshold', strict: true,
+      message: '離れたと判定するしきい値(touch_clear_threshold)は、触れたと判定するしきい値(touch_set_threshold)より小さくする' },
+    { lower: '2f_scroll_slow_speed', upper: '2f_scroll_fast_speed', strict: false,
+      message: 'スクロールの「ゆっくり」の速さ(2f_scroll_slow_speed)は「速い」の速さ(2f_scroll_fast_speed)以下にする' },
+    { lower: 'cursor_slow_speed', upper: 'cursor_fast_speed', strict: false,
+      message: 'カーソルの「ゆっくり」の速さ(cursor_slow_speed)は「速い」の速さ(cursor_fast_speed)以下にする' },
+    { lower: 'dynamic_filter_bottom_speed', upper: 'dynamic_filter_top_speed', strict: false,
+      message: '座標フィルタの下限速度(dynamic_filter_bottom_speed)は上限速度(dynamic_filter_top_speed)以下にする' },
+  ];
+
+  // getValue(name) が数値を返す組だけ検査する(片方しか無い・未接続の側は対象外)
+  function validateParams(getValue) {
+    const out = [];
+    for (const rule of PARAM_RULES) {
+      const lo = getValue(rule.lower);
+      const hi = getValue(rule.upper);
+      if (typeof lo !== 'number' || typeof hi !== 'number' || Number.isNaN(lo) || Number.isNaN(hi)) continue;
+      if (rule.strict ? lo >= hi : lo > hi) out.push({ names: [rule.lower, rule.upper], message: rule.message });
+    }
+    return out;
+  }
+
   function paramValue(params, name) {
     let v;
     if (Array.isArray(params)) {
@@ -839,7 +864,7 @@
     stripAnsi, isPrompt, stripPromptPrefix, isEcho, parseListLine, parseInfoLine, parseTraceLine,
     splitSidePrefix, bleCommand, isEndMarker, orderDevices,
     clockOffset, pickPortOrder, toConfName, exportConf,
-    paramValue, isParamActive, segmentAttempts, observeAttempt, observationFromSummary, summaryHostWindow, inferKind, whyNot, describeState,
+    paramValue, isParamActive, PARAM_RULES, validateParams, segmentAttempts, observeAttempt, observationFromSummary, summaryHostWindow, inferKind, whyNot, describeState,
     observationText, hostText, sentText, recognitionText, kindLabel,
     mergeParams, pendingCommands, liveCommands, padStateFromFrame, frameToPadPoints,
     formatParamValue, paramMatchesQuery, practicalRange,

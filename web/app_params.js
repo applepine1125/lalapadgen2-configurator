@@ -267,6 +267,22 @@
     return p.value;
   }
 
+  // 大小関係のルール違反を側ごとに集める。画面に出ている値(保留中の変更を含む)で検査する
+  function currentViolations() {
+    const out = [];
+    for (const side of ['R', 'L']) {
+      if (!params[side] || !params[side].length) continue;
+      for (const v of T.validateParams((name) => sideGetValue(side, name))) out.push({ side, ...v });
+    }
+    return out;
+  }
+
+  function violationText(list) {
+    const bySide = {};
+    for (const v of list) (bySide[v.message] = bySide[v.message] || []).push(v.side === 'R' ? '右' : '左');
+    return Object.entries(bySide).map(([m, sides]) => `${m}(${[...new Set(sides)].join('・')})`).join(' / ');
+  }
+
   function rowHasPending(name) {
     return pending.common[name] !== undefined || pending.R[name] !== undefined || pending.L[name] !== undefined;
   }
@@ -388,6 +404,7 @@
     if (value === p.value) delete pending.common[p.name]; else pending.common[p.name] = value;
     refreshRowVisuals(p.name);
     refreshDependentRows(p.name);
+    refreshViolations();
     notifyHeaderChanged();
   }
 
@@ -396,6 +413,7 @@
     if (value === current) delete pending[sideKey][p.name]; else pending[sideKey][p.name] = value;
     refreshRowVisuals(p.name);
     refreshDependentRows(p.name);
+    refreshViolations();
     notifyHeaderChanged();
   }
 
@@ -574,6 +592,31 @@
     if (totalRows === 0) {
       root2.innerHTML = '<span class="legend">一致するパラメータがありません</span>';
     }
+    markViolations(root2);
+  }
+
+  // 値を変えるたびに呼ぶ。行は再描画せず、違反の印だけ付け直す
+  function refreshViolations() {
+    const root2 = $('params');
+    for (const row of root2.querySelectorAll('.param.error')) row.classList.remove('error');
+    for (const w of root2.querySelectorAll('.param .warn')) w.remove();
+    markViolations(root2);
+  }
+
+  function markViolations(root2) {
+    const violations = currentViolations();
+    for (const v of violations) {
+      for (const name of v.names) {
+        const row = root2.querySelector(`.param[data-name="${name}"]`);
+        if (!row) continue;
+        row.classList.add('error');
+        if (row.querySelector('.warn')) continue;
+        const warn = document.createElement('div');
+        warn.className = 'warn';
+        warn.textContent = violationText(violations.filter((x) => x.names.includes(name)));
+        row.appendChild(warn);
+      }
+    }
   }
 
   function exportConfText() {
@@ -591,6 +634,8 @@
   async function write() {
     const sides = Link.activeSides();
     if (!sides.length) return { written: 0, failed: 0, total: 0, saveFailed: false };
+    const violations = currentViolations().filter((v) => sides.includes(v.side));
+    if (violations.length) return { written: 0, failed: 0, total: 0, saveFailed: false, blocked: violationText(violations) };
     const cmds = T.pendingCommands(pending, sides);
     if (!cmds.length) return { written: 0, failed: 0, total: 0, saveFailed: false };
     const failed = [];
