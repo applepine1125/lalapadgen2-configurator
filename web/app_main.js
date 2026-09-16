@@ -148,6 +148,7 @@
       const pendingBefore = Params.pendingCount();
       const keymapDirtyBefore = Keymap.isDirty();
       const writeResult = pendingBefore > 0 ? await Params.write() : null;
+      if (writeResult && writeResult.blocked) { setStatus(`書き込みを中止しました: ${writeResult.blocked}`, true); return; }
       let keymapErr = null;
       let keymapAction = '';
       if (resetRequested && resetConfirmed) {

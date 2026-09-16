@@ -183,24 +183,14 @@ test('PARAM_DEPENDS はブリーフどおりの従属関係を持つ', () => {
   assert.deepEqual(D['1f_tapdrag_gap_max_ms'], ['1f_tap_enable', '1f_presshold_enable']);
   assert.deepEqual(D['2f_tap_max_ms'], ['2f_tap_enable']);
   assert.deepEqual(D['2f_tap_move'], ['2f_tap_enable']);
-  assert.deepEqual(D['2f_presshold_enable'], ['2f_tap_enable']);
-  assert.deepEqual(D['2f_tapdrag_gap_max_ms'], ['2f_tap_enable', '2f_presshold_enable']);
   assert.deepEqual(D['3f_tap_max_ms'], ['3f_tap_enable']);
   assert.deepEqual(D['3f_tap_move'], ['3f_tap_enable']);
-  assert.deepEqual(D['3f_presshold_enable'], ['3f_tap_enable']);
-  assert.deepEqual(D['3f_tapdrag_gap_max_ms'], ['3f_tap_enable', '3f_presshold_enable']);
   assert.deepEqual(D['2f_pinch_start_distance'], ['2f_pinch_enable']);
   assert.deepEqual(D['2f_pinch_wheel_gain_x10'], ['2f_pinch_enable']);
   assert.deepEqual(D['2f_pinch_ratio_x10'], ['2f_pinch_enable']);
   assert.deepEqual(D.cursor_inertia_decay, ['cursor_inertia_enable']);
-  assert.deepEqual(D.cursor_inertia_recent_window_ms, ['cursor_inertia_enable']);
-  assert.deepEqual(D.cursor_inertia_stale_gap_ms, ['cursor_inertia_enable']);
-  assert.deepEqual(D.cursor_inertia_min_samples, ['cursor_inertia_enable']);
   assert.deepEqual(D.cursor_inertia_min_avg_speed, ['cursor_inertia_enable']);
   assert.deepEqual(D.scroll_inertia_decay, ['scroll_inertia_enable']);
-  assert.deepEqual(D.scroll_inertia_recent_window_ms, ['scroll_inertia_enable']);
-  assert.deepEqual(D.scroll_inertia_stale_gap_ms, ['scroll_inertia_enable']);
-  assert.deepEqual(D.scroll_inertia_min_samples, ['scroll_inertia_enable']);
   assert.deepEqual(D.scroll_inertia_min_avg_speed, ['scroll_inertia_enable']);
   assert.deepEqual(D['2f_scroll_start_move'], { any: ['scroll_x_enable', 'scroll_y_enable'] });
   assert.deepEqual(D.scroll_report_interval_ms, { any: ['scroll_x_enable', 'scroll_y_enable'] });
@@ -676,4 +666,35 @@ test('現在値がファームの最小値を下回っていても、practicalRa
 
 test('current が渡されないとき、practicalRange は現在値による拡張をせず実用レンジをそのまま返す', () => {
   assert.deepEqual(T.practicalRange('active_mode_sampling_period_ms', 1, 65535, undefined), { min: 1, max: 100 });
+});
+
+test('touch_clear_threshold が touch_set_threshold 以上のとき、validateParams するとその組が違反として返る', () => {
+  const values = { touch_set_threshold: 30, touch_clear_threshold: 30 };
+  const v = T.validateParams((n) => values[n]);
+  assert.equal(v.length, 1);
+  assert.deepEqual(v[0].names, ['touch_clear_threshold', 'touch_set_threshold']);
+  assert.match(v[0].message, /touch_clear_threshold/);
+});
+
+test('slow が fast と等しいとき、validateParams すると違反にならない(補間しない二値扱いは許容)', () => {
+  const values = { '2f_scroll_slow_speed': 40, '2f_scroll_fast_speed': 40, cursor_slow_speed: 10, cursor_fast_speed: 10 };
+  assert.deepEqual(T.validateParams((n) => values[n]), []);
+});
+
+test('slow が fast を超えるとき、validateParams するとスクロールとカーソルの両方が違反として返る', () => {
+  const values = { '2f_scroll_slow_speed': 50, '2f_scroll_fast_speed': 40, cursor_slow_speed: 100, cursor_fast_speed: 90, dynamic_filter_bottom_speed: 600, dynamic_filter_top_speed: 511 };
+  const names = T.validateParams((n) => values[n]).map((x) => x.names[0]);
+  assert.deepEqual(names, ['2f_scroll_slow_speed', 'cursor_slow_speed', 'dynamic_filter_bottom_speed']);
+});
+
+test('片方の値が無い(未接続・旧ファーム)とき、validateParams するとその組は検査しない', () => {
+  const values = { touch_set_threshold: 30, '2f_scroll_slow_speed': 50 };
+  assert.deepEqual(T.validateParams((n) => values[n]), []);
+});
+
+test('PARAM_RULES の名前は説明文に含まれ、lower と upper は別の名前になっている', () => {
+  for (const r of T.PARAM_RULES) {
+    assert.notEqual(r.lower, r.upper);
+    assert.ok(r.message.includes(r.lower) && r.message.includes(r.upper), r.message);
+  }
 });

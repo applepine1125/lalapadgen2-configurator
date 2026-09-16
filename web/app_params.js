@@ -16,14 +16,12 @@
   const GROUPS = [
     { title: '1本指タップ / タップドラッグ', names: ['1f_tap_enable', '1f_tap_max_ms', '1f_tap_move', '1f_presshold_enable', '1f_tapdrag_gap_max_ms', '1f_release_grace_ms', '1f_drag_hold_ms'] },
     { title: 'カーソル移動量(速度別ゲイン)', names: ['cursor_slow_speed', 'cursor_fast_speed', 'cursor_slow_gain_x100', 'cursor_fast_gain_x100'] },
-    { title: '2本指タップ / スクロール / ピンチ', names: ['2f_tap_enable', '2f_tap_max_ms', '2f_tap_move', '2f_presshold_enable', '2f_tapdrag_gap_max_ms', 'scroll_x_enable', 'scroll_y_enable', '2f_scroll_start_move', '2f_scroll_slow_speed', '2f_scroll_fast_speed', '2f_scroll_slow_gain_x100', '2f_scroll_fast_gain_x100', '2f_pinch_enable', '2f_pinch_start_distance', '2f_pinch_ratio_x10', '2f_pinch_wheel_gain_x10'] },
-    { title: '3本指', names: ['3f_tap_enable', '3f_tap_max_ms', '3f_tap_move', '3f_presshold_enable', '3f_tapdrag_gap_max_ms', '3f_swipe_threshold'] },
-    { title: '慣性', names: ['cursor_inertia_enable', 'cursor_inertia_decay', 'cursor_inertia_recent_window_ms', 'cursor_inertia_stale_gap_ms', 'cursor_inertia_min_samples', 'cursor_inertia_min_avg_speed', 'scroll_inertia_enable', 'scroll_inertia_decay', 'scroll_inertia_recent_window_ms', 'scroll_inertia_stale_gap_ms', 'scroll_inertia_min_samples', 'scroll_inertia_min_avg_speed'] },
+    { title: '2本指タップ / スクロール / ピンチ', names: ['2f_tap_enable', '2f_tap_max_ms', '2f_tap_move', 'scroll_x_enable', 'scroll_y_enable', '2f_scroll_start_move', '2f_scroll_slow_speed', '2f_scroll_fast_speed', '2f_scroll_slow_gain_x100', '2f_scroll_fast_gain_x100', '2f_pinch_enable', '2f_pinch_start_distance', '2f_pinch_ratio_x10', '2f_pinch_wheel_gain_x10'] },
+    { title: '3本指', names: ['3f_tap_enable', '3f_tap_max_ms', '3f_tap_move', '3f_swipe_threshold'] },
+    { title: '慣性', names: ['cursor_inertia_enable', 'cursor_inertia_decay', 'cursor_inertia_min_avg_speed', 'scroll_inertia_enable', 'scroll_inertia_decay', 'scroll_inertia_min_avg_speed'] },
     { title: '送信レート(BLE 対策)', names: ['cursor_report_interval_ms', 'scroll_report_interval_ms'] },
-    { title: 'IC 感度 / タッチ判定', ic: true, names: ['touch_set_threshold', 'touch_clear_threshold', 'finger_confidence_threshold', 'finger_split_factor', 'alp_set_debounce', 'alp_clear_debounce'] },
+    { title: 'IC 感度 / タッチ判定', ic: true, names: ['touch_set_threshold', 'touch_clear_threshold', 'finger_confidence_threshold', 'finger_split_factor'] },
     { title: 'IC 座標フィルタ(手ぶれ・なめらかさ)', ic: true, names: ['stationary_touch_mov_threshold', 'jitter_filter_delta', 'dynamic_filter_bottom_speed', 'dynamic_filter_top_speed', 'dynamic_filter_bottom_beta'] },
-    { title: 'IC サンプリング周期 / 省電力', ic: true, names: ['active_mode_sampling_period_ms', 'idle_touch_mode_sampling_period_ms', 'idle_mode_sampling_period_ms', 'lp1_mode_sampling_period_ms', 'lp2_mode_sampling_period_ms', 'active_mode_timeout_ms', 'idle_touch_mode_timeout_s', 'idle_mode_timeout_s', 'lp1_mode_timeout_s'] },
-    { title: 'ATI(基準の自動校正)', ic: true, reati: true, names: ['ati_targetcount'] },
   ];
   const PARAM_HELP = {
     '1f_tap_enable': { what: '1 本指タップを左クリックにする', on: 'タップでクリックする', off: 'タップでクリックしない' },
@@ -40,13 +38,9 @@
     '2f_tap_enable': { what: '2 本指タップを右クリックにする', on: '2 本指タップでクリックする', off: '2 本指タップでクリックしない' },
     '2f_tap_max_ms': { what: '2 本指タップと見なす押下時間の上限(ms)', up: '長めのタップも拾うが短い押し込みもクリックになる', down: '素早いタップだけ拾う' },
     '2f_tap_move': { what: '2 本指タップ中に許す移動量', up: '指がぶれてもタップになる', down: '少しの動きでスクロール扱いになる' },
-    '2f_presshold_enable': { what: '2 本指タップ後にボタンを押したまま 2 回目の接触を待つ', on: '2 本指のタップドラッグができる', off: 'しない' },
-    '2f_tapdrag_gap_max_ms': { what: '2 本指タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりでもドラッグに入るが右クリックの確定が遅れる', down: '確定は速いがドラッグに入りにくい' },
     '3f_tap_enable': { what: '3 本指タップを中クリックにする', on: '3 本指タップでクリックする', off: '3 本指タップでクリックしない' },
     '3f_tap_max_ms': { what: '3 本指タップと見なす押下時間の上限(ms)', up: '長めのタップも拾うが短い押し込みもクリックになる', down: '素早いタップだけ拾う' },
     '3f_tap_move': { what: '3 本指タップ中に許す移動量', up: '指がぶれてもタップになる', down: '少しの動きでスワイプ扱いになる' },
-    '3f_presshold_enable': { what: '3 本指タップ後にボタンを押したまま 2 回目の接触を待つ', on: '3 本指のタップドラッグができる', off: 'しない' },
-    '3f_tapdrag_gap_max_ms': { what: '3 本指タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりでもドラッグに入るが中クリックの確定が遅れる', down: '確定は速いがドラッグに入りにくい' },
     '3f_swipe_threshold': { what: '3 本指スワイプと見なす移動量', up: '大きく動かさないとスワイプにならない', down: '小さな動きでスワイプになる' },
     scroll_x_enable: { what: '横の 2 本指スクロール', on: '横スクロールする', off: '横スクロールしない' },
     scroll_y_enable: { what: '縦の 2 本指スクロール', on: '縦スクロールする', off: '縦スクロールしない' },
@@ -61,22 +55,14 @@
     '2f_pinch_wheel_gain_x10': { what: 'ピンチで送るホイール量の倍率(10 = 1.0 倍)', up: '同じ開閉で大きく拡大縮小する', down: '小さく拡大縮小する' },
     cursor_inertia_enable: { what: '指を離した後もカーソルが滑る慣性', on: '離した後に滑る', off: '離すと止まる' },
     cursor_inertia_decay: { what: '慣性の減衰(1000 に近いほど長く滑る)', up: '長く滑る', down: '早く止まる' },
-    cursor_inertia_recent_window_ms: { what: '離す直前の速度を見る時間幅(ms)', up: '長い区間の平均速度で判断する', down: '離す直前の速度だけで判断する' },
-    cursor_inertia_stale_gap_ms: { what: '最後の移動から離すまでがこれを超えると慣性を出さない(ms)', up: '止めてから離しても滑る', down: '止めてから離すと滑らない' },
-    cursor_inertia_min_samples: { what: '慣性を出すのに必要な直近の移動サンプル数', up: '短い動きでは滑らない', down: '短い動きでも滑る' },
     cursor_inertia_min_avg_speed: { what: 'この速度以上で離したときだけ慣性を出す', up: '滑りにくくなる', down: 'ゆっくり離しても滑る' },
     scroll_inertia_enable: { what: '指を離した後もスクロールが続く慣性', on: '離した後に滑る', off: '離すと止まる' },
     scroll_inertia_decay: { what: 'スクロール慣性の減衰(1000 に近いほど長く滑る)', up: '長く滑る', down: '早く止まる' },
-    scroll_inertia_recent_window_ms: { what: '離す直前の速度を見る時間幅(ms)', up: '長い区間の平均速度で判断する', down: '離す直前の速度だけで判断する' },
-    scroll_inertia_stale_gap_ms: { what: '最後の移動から離すまでがこれを超えると慣性を出さない(ms)', up: '止めてから離しても滑る', down: '止めてから離すと滑らない' },
-    scroll_inertia_min_samples: { what: '慣性を出すのに必要な直近の移動サンプル数', up: '短い動きでは滑らない', down: '短い動きでも滑る' },
     scroll_inertia_min_avg_speed: { what: 'この速度以上で離したときだけ慣性を出す', up: '滑りにくくなる', down: 'ゆっくり離しても滑る' },
     cursor_report_interval_ms: { what: 'カーソル移動の報告をまとめて送る間隔(ms)。0 でフレームごと(約 100Hz)。BLE で動かし続けると遅くなる場合は 16〜25 にすると送信量が半分〜1/3 になる', up: '送信は減るが最大その ms だけ遅れる', down: '遅れは減るが送信量が増える' },
     scroll_report_interval_ms: { what: '2 本指スクロールの報告をまとめて送る間隔(ms)。考え方はカーソルと同じ', up: '送信は減るが最大その ms だけ遅れる', down: '遅れは減るが送信量が増える' },
     touch_set_threshold: { what: '触れたと判定するタッチ強度のしきい値', up: '軽いタッチを拾いにくくなる', down: '軽いタッチを拾うが誤反応も増える' },
     touch_clear_threshold: { what: '離れたと判定するタッチ強度のしきい値(touch_set_threshold より小さくする)', up: 'set との差が縮まり離し判定が遅れやすい', down: 'set との差が広がり離し判定が早まる' },
-    alp_set_debounce: { what: '低消費電力モードから復帰するために必要な連続検出回数', up: '誤起動が減るが復帰が遅くなる', down: '復帰は速いが誤起動が増える' },
-    alp_clear_debounce: { what: '低消費電力モードへ戻るために必要な連続非検出回数', up: '戻りにくくなる', down: 'すぐ低消費電力モードへ戻る' },
     stationary_touch_mov_threshold: { what: 'これ以下の移動量は指が止まっていると見なすしきい値。止まったままが続くと省電力の Idle-Touch モードへ移る', up: '大きく動いても止まっている扱いになりやすい', down: '小さな動きでも止まっていないと判定されやすい' },
     jitter_filter_delta: { what: '指を止めているときの細かい揺れ(ジッタ)を消す幅', up: '大きな揺れまで消せるが細かい動きも消えやすい', down: '細かい動きは拾えるが震えも出やすい' },
     finger_confidence_threshold: { what: '指として認識するために必要な確からしさの下限', up: '誤検出は減るが指を拾いにくくなる', down: '拾いやすくなるが誤検出が増える' },
@@ -84,6 +70,19 @@
     dynamic_filter_bottom_speed: { what: '指の動きが遅いほど座標を強く滑らかにし、速いほど弱くする仕組みの下限速度。これより遅い動きは一律で最も強く滑らかになる', up: '最も強く滑らかにする範囲が速い動きまで広がる(ゆっくりした操作がより滑らかになるが遅れやすくなる)', down: '最も強く滑らかにする範囲が遅い動きだけに狭まる(ゆっくりした操作でも追従しやすくなる)' },
     dynamic_filter_top_speed: { what: '同じ仕組みの上限速度。これより速い動きは滑らかにせず生の座標をそのまま使う', up: '滑らかにする速度域が広がり、速い動きも少し滑らかになる', down: '滑らかにする速度域が狭まり、速い動きはすぐ生の座標になる' },
     dynamic_filter_bottom_beta: { what: '下限速度以下(いちばん遅い)のときの滑らかさの強さ', up: '遅い動きがより滑らかになるが追従が遅れる', down: '遅い動きの追従は良くなるが震えが出やすい' },
+    // 以下は tp list に出さなくなった項目。旧ファームが返してきたときに「その他」で説明を出すために残す
+    '2f_presshold_enable': { what: '2 本指タップ後にボタンを押したまま 2 回目の接触を待つ', on: '2 本指のタップドラッグができる', off: 'しない' },
+    '2f_tapdrag_gap_max_ms': { what: '2 本指タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりでもドラッグに入るが右クリックの確定が遅れる', down: '確定は速いがドラッグに入りにくい' },
+    '3f_presshold_enable': { what: '3 本指タップ後にボタンを押したまま 2 回目の接触を待つ', on: '3 本指のタップドラッグができる', off: 'しない' },
+    '3f_tapdrag_gap_max_ms': { what: '3 本指タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりでもドラッグに入るが中クリックの確定が遅れる', down: '確定は速いがドラッグに入りにくい' },
+    cursor_inertia_recent_window_ms: { what: '離す直前の速度を見る時間幅(ms)', up: '長い区間の平均速度で判断する', down: '離す直前の速度だけで判断する' },
+    cursor_inertia_stale_gap_ms: { what: '最後の移動から離すまでがこれを超えると慣性を出さない(ms)', up: '止めてから離しても滑る', down: '止めてから離すと滑らない' },
+    cursor_inertia_min_samples: { what: '慣性を出すのに必要な直近の移動サンプル数', up: '短い動きでは滑らない', down: '短い動きでも滑る' },
+    scroll_inertia_recent_window_ms: { what: '離す直前の速度を見る時間幅(ms)', up: '長い区間の平均速度で判断する', down: '離す直前の速度だけで判断する' },
+    scroll_inertia_stale_gap_ms: { what: '最後の移動から離すまでがこれを超えると慣性を出さない(ms)', up: '止めてから離しても滑る', down: '止めてから離すと滑らない' },
+    scroll_inertia_min_samples: { what: '慣性を出すのに必要な直近の移動サンプル数', up: '短い動きでは滑らない', down: '短い動きでも滑る' },
+    alp_set_debounce: { what: '低消費電力モードから復帰するために必要な連続検出回数', up: '誤起動が減るが復帰が遅くなる', down: '復帰は速いが誤起動が増える' },
+    alp_clear_debounce: { what: '低消費電力モードへ戻るために必要な連続非検出回数', up: '戻りにくくなる', down: 'すぐ低消費電力モードへ戻る' },
     ati_targetcount: { what: '各電極の基準カウントの目標値。変更したら Re-ATI が必要', up: '基準が高くなる', down: '基準が低くなる' },
     active_mode_sampling_period_ms: { what: '触れて操作している Active モードでのサンプリング周期(ms)', up: '反応は遅くなるが電池は持つ', down: '反応は速くなるが電池を使う' },
     idle_touch_mode_sampling_period_ms: { what: '指を触れたまま動かしていない Idle-Touch モードでのサンプリング周期(ms)', up: '再び動かしたときの反応が遅れるが電池は持つ', down: '反応は速いが電池を使う' },
@@ -121,6 +120,7 @@
   let pending = { common: {}, R: {}, L: {} };
   let detailMode = false;
   let query = '';
+  let otherOpen = false;
   let presetTrackpad = null;
   let mergedByName = {};
   const DEPENDENT_ON = (() => {
@@ -267,6 +267,22 @@
     return p.value;
   }
 
+  // 大小関係のルール違反を側ごとに集める。画面に出ている値(保留中の変更を含む)で検査する
+  function currentViolations() {
+    const out = [];
+    for (const side of ['R', 'L']) {
+      if (!params[side] || !params[side].length) continue;
+      for (const v of T.validateParams((name) => sideGetValue(side, name))) out.push({ side, ...v });
+    }
+    return out;
+  }
+
+  function violationText(list) {
+    const bySide = {};
+    for (const v of list) (bySide[v.message] = bySide[v.message] || []).push(v.side === 'R' ? '右' : '左');
+    return Object.entries(bySide).map(([m, sides]) => `${m}(${[...new Set(sides)].join('・')})`).join(' / ');
+  }
+
   function rowHasPending(name) {
     return pending.common[name] !== undefined || pending.R[name] !== undefined || pending.L[name] !== undefined;
   }
@@ -388,6 +404,7 @@
     if (value === p.value) delete pending.common[p.name]; else pending.common[p.name] = value;
     refreshRowVisuals(p.name);
     refreshDependentRows(p.name);
+    refreshViolations();
     notifyHeaderChanged();
   }
 
@@ -396,6 +413,7 @@
     if (value === current) delete pending[sideKey][p.name]; else pending[sideKey][p.name] = value;
     refreshRowVisuals(p.name);
     refreshDependentRows(p.name);
+    refreshViolations();
     notifyHeaderChanged();
   }
 
@@ -529,32 +547,35 @@
     if (detailMode) root2.appendChild(renderDetailHeader());
     const seen = new Set();
     const known = new Set(GROUPS.flatMap((g) => g.names));
-    const groups = GROUPS.concat([{ title: 'その他', names: merged.map((p) => p.name).filter((n) => !known.has(n)) }]);
+    // グループに載っていない名前(旧ファームが返す、調整ツールから外した項目など)は「その他」に
+    // まとめ、既定で折りたたむ。検索中は一致を見せるために開く
+    const groups = GROUPS.concat([{ title: 'その他', other: true, names: merged.map((p) => p.name).filter((n) => !known.has(n)) }]);
     mergedByName = Object.fromEntries(merged.map((p) => [p.name, p]));
     const byName = mergedByName;
     const screen = screenTrackpad();
     let totalRows = 0;
     for (const g of groups) {
       const box = document.createElement('fieldset');
-      const legend = document.createElement('legend');
-      legend.textContent = g.title;
-      box.appendChild(legend);
+      let container = box;
+      if (g.other) {
+        container = document.createElement('details');
+        container.className = 'subgroup';
+        container.open = otherOpen || query.trim() !== '';
+        container.addEventListener('toggle', () => { if (query.trim() === '') otherOpen = container.open; });
+        const summary = document.createElement('summary');
+        summary.textContent = g.title;
+        container.appendChild(summary);
+        container.appendChild(box);
+      } else {
+        const legend = document.createElement('legend');
+        legend.textContent = g.title;
+        box.appendChild(legend);
+      }
       if (g.ic) {
         const note = document.createElement('div');
         note.className = 'groupnote';
-        note.textContent = '書き込んだあと、パッドに一度触れると反映されます'
-          + (g.reati ? '。この値を変えたら Re-ATI が必要です' : '');
+        note.textContent = '書き込んだあと、パッドに一度触れると反映されます';
         box.appendChild(note);
-      }
-      if (g.reati) {
-        const b = document.createElement('button');
-        b.textContent = 'Re-ATI';
-        b.disabled = Link.activeSides().length === 0;
-        b.onclick = async () => {
-          for (const s of Link.activeSides()) await Link.runSimpleOnSide(s, 'tp reati');
-          root.TpAppMain.setStatus('Re-ATI を実行しました');
-        };
-        box.appendChild(b);
       }
       let rows = 0;
       for (const name of g.names) {
@@ -566,10 +587,35 @@
         box.appendChild(renderParamRow(p, screen, help));
         rows++;
       }
-      if (rows > 0) { root2.appendChild(box); totalRows += rows; }
+      if (rows > 0) { root2.appendChild(container); totalRows += rows; }
     }
     if (totalRows === 0) {
       root2.innerHTML = '<span class="legend">一致するパラメータがありません</span>';
+    }
+    markViolations(root2);
+  }
+
+  // 値を変えるたびに呼ぶ。行は再描画せず、違反の印だけ付け直す
+  function refreshViolations() {
+    const root2 = $('params');
+    for (const row of root2.querySelectorAll('.param.error')) row.classList.remove('error');
+    for (const w of root2.querySelectorAll('.param .warn')) w.remove();
+    markViolations(root2);
+  }
+
+  function markViolations(root2) {
+    const violations = currentViolations();
+    for (const v of violations) {
+      for (const name of v.names) {
+        const row = root2.querySelector(`.param[data-name="${name}"]`);
+        if (!row) continue;
+        row.classList.add('error');
+        if (row.querySelector('.warn')) continue;
+        const warn = document.createElement('div');
+        warn.className = 'warn';
+        warn.textContent = violationText(violations.filter((x) => x.names.includes(name)));
+        row.appendChild(warn);
+      }
     }
   }
 
@@ -588,6 +634,8 @@
   async function write() {
     const sides = Link.activeSides();
     if (!sides.length) return { written: 0, failed: 0, total: 0, saveFailed: false };
+    const violations = currentViolations().filter((v) => sides.includes(v.side));
+    if (violations.length) return { written: 0, failed: 0, total: 0, saveFailed: false, blocked: violationText(violations) };
     const cmds = T.pendingCommands(pending, sides);
     if (!cmds.length) return { written: 0, failed: 0, total: 0, saveFailed: false };
     const failed = [];
