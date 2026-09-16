@@ -70,6 +70,29 @@
     dynamic_filter_bottom_speed: { what: '指の動きが遅いほど座標を強く滑らかにし、速いほど弱くする仕組みの下限速度。これより遅い動きは一律で最も強く滑らかになる', up: '最も強く滑らかにする範囲が速い動きまで広がる(ゆっくりした操作がより滑らかになるが遅れやすくなる)', down: '最も強く滑らかにする範囲が遅い動きだけに狭まる(ゆっくりした操作でも追従しやすくなる)' },
     dynamic_filter_top_speed: { what: '同じ仕組みの上限速度。これより速い動きは滑らかにせず生の座標をそのまま使う', up: '滑らかにする速度域が広がり、速い動きも少し滑らかになる', down: '滑らかにする速度域が狭まり、速い動きはすぐ生の座標になる' },
     dynamic_filter_bottom_beta: { what: '下限速度以下(いちばん遅い)のときの滑らかさの強さ', up: '遅い動きがより滑らかになるが追従が遅れる', down: '遅い動きの追従は良くなるが震えが出やすい' },
+    // 以下は tp list に出さなくなった項目。旧ファームが返してきたときに「その他」で説明を出すために残す
+    '2f_presshold_enable': { what: '2 本指タップ後にボタンを押したまま 2 回目の接触を待つ', on: '2 本指のタップドラッグができる', off: 'しない' },
+    '2f_tapdrag_gap_max_ms': { what: '2 本指タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりでもドラッグに入るが右クリックの確定が遅れる', down: '確定は速いがドラッグに入りにくい' },
+    '3f_presshold_enable': { what: '3 本指タップ後にボタンを押したまま 2 回目の接触を待つ', on: '3 本指のタップドラッグができる', off: 'しない' },
+    '3f_tapdrag_gap_max_ms': { what: '3 本指タップ後に 2 回目の接触を待つ時間(ms)', up: 'ゆっくりでもドラッグに入るが中クリックの確定が遅れる', down: '確定は速いがドラッグに入りにくい' },
+    cursor_inertia_recent_window_ms: { what: '離す直前の速度を見る時間幅(ms)', up: '長い区間の平均速度で判断する', down: '離す直前の速度だけで判断する' },
+    cursor_inertia_stale_gap_ms: { what: '最後の移動から離すまでがこれを超えると慣性を出さない(ms)', up: '止めてから離しても滑る', down: '止めてから離すと滑らない' },
+    cursor_inertia_min_samples: { what: '慣性を出すのに必要な直近の移動サンプル数', up: '短い動きでは滑らない', down: '短い動きでも滑る' },
+    scroll_inertia_recent_window_ms: { what: '離す直前の速度を見る時間幅(ms)', up: '長い区間の平均速度で判断する', down: '離す直前の速度だけで判断する' },
+    scroll_inertia_stale_gap_ms: { what: '最後の移動から離すまでがこれを超えると慣性を出さない(ms)', up: '止めてから離しても滑る', down: '止めてから離すと滑らない' },
+    scroll_inertia_min_samples: { what: '慣性を出すのに必要な直近の移動サンプル数', up: '短い動きでは滑らない', down: '短い動きでも滑る' },
+    alp_set_debounce: { what: '低消費電力モードから復帰するために必要な連続検出回数', up: '誤起動が減るが復帰が遅くなる', down: '復帰は速いが誤起動が増える' },
+    alp_clear_debounce: { what: '低消費電力モードへ戻るために必要な連続非検出回数', up: '戻りにくくなる', down: 'すぐ低消費電力モードへ戻る' },
+    ati_targetcount: { what: '各電極の基準カウントの目標値。変更したら Re-ATI が必要', up: '基準が高くなる', down: '基準が低くなる' },
+    active_mode_sampling_period_ms: { what: '触れて操作している Active モードでのサンプリング周期(ms)', up: '反応は遅くなるが電池は持つ', down: '反応は速くなるが電池を使う' },
+    idle_touch_mode_sampling_period_ms: { what: '指を触れたまま動かしていない Idle-Touch モードでのサンプリング周期(ms)', up: '再び動かしたときの反応が遅れるが電池は持つ', down: '反応は速いが電池を使う' },
+    idle_mode_sampling_period_ms: { what: '指が触れていない Idle モードでのサンプリング周期(ms)', up: '触れたときの初動が遅れるが電池は持つ', down: '初動は速いが電池を使う' },
+    lp1_mode_sampling_period_ms: { what: 'より省電力な LP1 モードでのサンプリング周期(ms)', up: '初動が遅れるが電池は持つ', down: '初動は速いが電池を使う' },
+    lp2_mode_sampling_period_ms: { what: '最も省電力な LP2 モードでのサンプリング周期(ms)', up: '初動が遅れるが電池は持つ', down: '初動は速いが電池を使う' },
+    active_mode_timeout_ms: { what: '指を離してから、Active モードを抜けて次の省電力モードへ落ちるまでの時間(ms)', up: 'Active モードを維持する時間が延びる(電池を使う)', down: '早く省電力モードへ落ちる' },
+    idle_touch_mode_timeout_s: { what: '指を触れたまま動かさない状態が続いたとき、次の省電力モードへ落ちるまでの時間(秒)', up: '置いたままでも反応が落ちにくいが電池を使う', down: '早く省電力になる' },
+    idle_mode_timeout_s: { what: '指が触れていない状態が続いたとき、さらに省電力な LP1 モードへ落ちるまでの時間(秒)', up: '手を離した後も反応が速いままの時間が延びるが電池を使う', down: '早く省電力になり、次に触れたときの反応が遅れやすい' },
+    lp1_mode_timeout_s: { what: '省電力の LP1 モードが続いたとき、さらに省電力な LP2 モードへ落ちるまでの時間(秒)', up: '長い放置後も復帰が速いままの時間が延びるが電池を使う', down: '早く最も省電力なモードになる' },
   };
 
   function helpFor(name) {
@@ -97,6 +120,7 @@
   let pending = { common: {}, R: {}, L: {} };
   let detailMode = false;
   let query = '';
+  let otherOpen = false;
   let presetTrackpad = null;
   let mergedByName = {};
   const DEPENDENT_ON = (() => {
@@ -505,16 +529,30 @@
     if (detailMode) root2.appendChild(renderDetailHeader());
     const seen = new Set();
     const known = new Set(GROUPS.flatMap((g) => g.names));
-    const groups = GROUPS.concat([{ title: 'その他', names: merged.map((p) => p.name).filter((n) => !known.has(n)) }]);
+    // グループに載っていない名前(旧ファームが返す、調整ツールから外した項目など)は「その他」に
+    // まとめ、既定で折りたたむ。検索中は一致を見せるために開く
+    const groups = GROUPS.concat([{ title: 'その他', other: true, names: merged.map((p) => p.name).filter((n) => !known.has(n)) }]);
     mergedByName = Object.fromEntries(merged.map((p) => [p.name, p]));
     const byName = mergedByName;
     const screen = screenTrackpad();
     let totalRows = 0;
     for (const g of groups) {
       const box = document.createElement('fieldset');
-      const legend = document.createElement('legend');
-      legend.textContent = g.title;
-      box.appendChild(legend);
+      let container = box;
+      if (g.other) {
+        container = document.createElement('details');
+        container.className = 'subgroup';
+        container.open = otherOpen || query.trim() !== '';
+        container.addEventListener('toggle', () => { if (query.trim() === '') otherOpen = container.open; });
+        const summary = document.createElement('summary');
+        summary.textContent = g.title;
+        container.appendChild(summary);
+        container.appendChild(box);
+      } else {
+        const legend = document.createElement('legend');
+        legend.textContent = g.title;
+        box.appendChild(legend);
+      }
       if (g.ic) {
         const note = document.createElement('div');
         note.className = 'groupnote';
@@ -531,7 +569,7 @@
         box.appendChild(renderParamRow(p, screen, help));
         rows++;
       }
-      if (rows > 0) { root2.appendChild(box); totalRows += rows; }
+      if (rows > 0) { root2.appendChild(container); totalRows += rows; }
     }
     if (totalRows === 0) {
       root2.innerHTML = '<span class="legend">一致するパラメータがありません</span>';

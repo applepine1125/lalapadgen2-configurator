@@ -4,6 +4,8 @@
   const fakeLive = /(?:^|[?&])fakeLive=1(?:&|$)/.test(location.search);
   const fakeLeftDown = /(?:^|[?&])fakeLeftDown=1(?:&|$)/.test(location.search);
   const fakeStudioLocked = /(?:^|[?&])fakeStudioLocked=1(?:&|$)/.test(location.search);
+  // 旧ファーム(tp list から外す前)を模す。グループに載っていない名前が「その他」に出る様子を見るため
+  const fakeOldParams = /(?:^|[?&])fakeOldParams=1(?:&|$)/.test(location.search);
   const DEVICES = badUsbMode
     ? [
       { id: 'usb-bad', kind: 'usb', name: 'usbmodem-bad' },
@@ -25,6 +27,11 @@
       { name: 'cursor_fast_speed', value: 90, min: 0, max: 500, kind: 'driver', def: 90 },
       { name: 'cursor_slow_gain_x100', value: 100, min: 0, max: 400, kind: 'driver', def: 100 },
       { name: 'cursor_fast_gain_x100', value: 200, min: 0, max: 400, kind: 'driver', def: 100 },
+      ...(fakeOldParams ? [
+        { name: 'alp_set_debounce', value: 2, min: 0, max: 255, kind: 'ic_u8', def: 2 },
+        { name: 'ati_targetcount', value: 400, min: 0, max: 1000, kind: 'ic_u16', def: 400 },
+        { name: 'cursor_inertia_min_samples', value: 2, min: 1, max: 12, kind: 'driver', def: 2 },
+      ] : []),
     ];
   }
   const PARAMS = { R: makeParams(250), L: makeParams(200) };
