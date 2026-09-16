@@ -187,6 +187,7 @@
     scroll_inertia_enable: 1, scroll_inertia_decay: 980, scroll_inertia_min_avg_speed: 10,
     dynamic_filter_bottom_speed: 30, dynamic_filter_top_speed: 511, dynamic_filter_bottom_beta: 20,
     cursor_report_interval_ms: 0, scroll_report_interval_ms: 0,
+    cursor_slow_speed: 10, cursor_fast_speed: 90, cursor_slow_gain_x100: 100, cursor_fast_gain_x100: 100,
   };
   const TAP_KINDS = {
     tap1: { prefix: '1f', n: 1, code: BTN[0], bit: 1, label: '左' },

@@ -20,6 +20,10 @@
       { name: '2f_scroll_start_move', value: 15, min: 0, max: 200, kind: 'driver', def: 15 },
       { name: 'touch_set_threshold', value: 20, min: 1, max: 255, kind: 'ic_u8', def: 20 },
       { name: 'cursor_inertia_enable', value: 0, min: 0, max: 1, kind: 'driver_bool', def: 0 },
+      { name: 'cursor_slow_speed', value: 10, min: 0, max: 500, kind: 'driver', def: 10 },
+      { name: 'cursor_fast_speed', value: 90, min: 0, max: 500, kind: 'driver', def: 90 },
+      { name: 'cursor_slow_gain_x100', value: 100, min: 0, max: 400, kind: 'driver', def: 100 },
+      { name: 'cursor_fast_gain_x100', value: 200, min: 0, max: 400, kind: 'driver', def: 100 },
     ];
   }
   const PARAMS = { R: makeParams(250), L: makeParams(200) };
